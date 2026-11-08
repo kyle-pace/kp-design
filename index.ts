@@ -8,3 +8,4 @@ export { default as SocialBadges } from './components/SocialBadges.astro';
 export { default as DevLayout } from './layouts/DevLayout.astro';
 export { startAnalytics, isOptedOut, setOptOut, track } from './lib/analytics';
 export { DEV_ANALYTICS, DEV_NAV, DEV_FOOTER } from './lib/kylepace-dev';
+export { sitesFor, type SiteKey } from './lib/sites';

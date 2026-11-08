@@ -8,6 +8,7 @@ import Footer from '../components/Footer.astro';
 import DisplaySettings from '../components/DisplaySettings.astro';
 import DisplaySettingsInit from '../components/DisplaySettingsInit.astro';
 import { DEV_NAV, DEV_FOOTER } from '../lib/kylepace-dev';
+import { sitesFor } from '../lib/sites';
 
 interface Props {
   title?: string;
@@ -69,7 +70,7 @@ const canonical = new URL(Astro.url.pathname, site);
   </head>
   <body data-accent={accent}>
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header name="kylepace" suffix=".dev" mono href="https://kylepace.dev/" links={DEV_NAV} />
+    <Header name="kylepace" suffix=".dev" mono href="https://kylepace.dev/" links={DEV_NAV} sites={sitesFor('dev')} />
     <main id="main">
       <slot />
     </main>

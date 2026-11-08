@@ -6,15 +6,17 @@ export const DEV_ANALYTICS = {
   liveHosts: ['kylepace.dev'],
 };
 
+// The way back to kylepace.net is the site switch beside the wordmark (lib/sites.ts).
 export const DEV_NAV = [
-  { href: 'https://kylepace.dev/', label: 'Experiments' },
+  { href: 'https://kylepace.dev/', label: 'Labs' },
+  { href: 'https://kylepace.dev/apps/', label: 'Apps' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
-  { href: 'https://kylepace.net/', label: 'kylepace.net', emphasis: true },
 ];
 
 export const DEV_FOOTER = [
   { href: 'https://kylepace.net/', label: 'kylepace.net' },
   { href: 'https://kylepace.net/about/', label: 'About Kyle' },
+  { href: 'https://kylepace.net/now/', label: 'Now' },
   { href: 'https://github.com/kyle-pace', label: 'GitHub' },
   { href: 'mailto:mail@kylepace.net', label: 'Email' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
