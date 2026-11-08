@@ -6,10 +6,10 @@ It follows [kyle-pace/principles](https://github.com/kyle-pace/principles): acce
 
 ## Install
 
-Installed from GitHub, pinned to a tag:
+Installed from GitHub, pinned to a commit (or a release tag, once one exists):
 
 ```sh
-npm install github:kyle-pace/kp-design#v0.1.0
+npm install github:kyle-pace/kp-design#<commit-sha>
 ```
 
 No build step. Astro compiles the components inside the site that uses them.
@@ -76,8 +76,8 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 ## Releasing a change
 
 1. Change it here, and try it in a real site first (`npm i ../kp-design` in a local clone), including its build and an axe check in light and dark mode.
-2. Bump `version` in `package.json`, commit, and tag it: `git tag v0.2.0 && git push --tags`.
-3. Update each site's dependency to the new tag.
+2. Bump `version` in `package.json` and commit. Optionally make a release for it on GitHub (Releases, Draft a new release, tag `vX.Y.Z`).
+3. Update each site's dependency to the new commit or tag.
 
 ## Changelog
 
