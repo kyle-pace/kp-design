@@ -70,7 +70,9 @@ const canonical = new URL(Astro.url.pathname, site);
   </head>
   <body data-accent={accent}>
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header name="kylepace" suffix=".dev" mono href="https://kylepace.dev/" links={DEV_NAV} sites={sitesFor('dev')} />
+    {/* Same name as kylepace.net, so the name and the site switch stay put when you swap
+        sites; the filled half of the switch says which site you're on. */}
+    <Header name="Kyle Pace" href="https://kylepace.dev/" links={DEV_NAV} sites={sitesFor('dev')} />
     <main id="main">
       <slot />
     </main>
