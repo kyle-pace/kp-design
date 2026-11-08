@@ -16,7 +16,19 @@ No build step. Astro compiles the components inside the site that uses them.
 
 ## Use
 
-In the site's layout:
+On kylepace.dev and its experiments, use the ready-made layout:
+
+```astro
+---
+import DevLayout from 'kp-design/layouts/DevLayout.astro';
+---
+
+<DevLayout title="Transit" accent="sky" image="/transit/share.png" imageAlt="...">
+  ...
+</DevLayout>
+```
+
+Other sites (kylepace.net) build their own layout from the parts:
 
 ```astro
 ---
@@ -68,6 +80,9 @@ Use absolute URLs in the header and footer when the page might run on a differen
 | `DisplaySettingsInit` | `components/DisplaySettingsInit.astro` | Goes in `<head>`; applies saved settings before paint |
 | `StatusBadge` | `components/StatusBadge.astro` | "Draft" or "In progress" pill. Prop: `status` |
 | `SocialBadges` | `components/SocialBadges.astro` | LinkedIn, GitHub and Mastodon, with each brand's official logo from `assets/brands/` |
+| `DevLayout` | `layouts/DevLayout.astro` (`kp-design/layouts/DevLayout.astro`) | The whole page shell for kylepace.dev and its experiments: head and share-card tags, header, footer, display settings and analytics. Props: `title`, `description`, `accent`, `image`, `imageAlt`, `imageWidth`, `imageHeight`, `noindex`; a `head` slot for extra tags |
+| Analytics | `lib/analytics.ts` (`kp-design/analytics`) | `startAnalytics({ apiKey, liveHosts })`, `isOptedOut`, `setOptOut`, `track`. The private Amplitude setup from the principles |
+| kylepace.dev settings | `lib/kylepace-dev.ts` (`kp-design/kylepace-dev`) | The hub's nav and footer links and its Amplitude project, used by `DevLayout` |
 
 Per-page accents: set `data-accent="sky"` (or tangerine, pink, violet, lime, sunshine, sage, evening, coral, mint) on any element.
 
@@ -81,4 +96,5 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.2.0**: `DevLayout` (the kylepace.dev page shell), shared analytics (`kp-design/analytics`) and the kylepace.dev nav, footer and Amplitude settings in one place (`kp-design/kylepace-dev`). Adding a link to the kylepace.dev header or footer is now one change here.
 - **0.1.0**: First version, pulled out of kylepace.net and kylepace.dev.

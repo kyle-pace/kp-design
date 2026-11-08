@@ -1,6 +1,6 @@
 {
   "name": "kp-design",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kyle Pace's design system for his websites: tokens, Atkinson Hyperlegible type, display settings, header and footer.",
   "type": "module",
   "repository": "github:kyle-pace/kp-design",
@@ -8,12 +8,24 @@
     ".": "./index.ts",
     "./tokens.css": "./styles/tokens.css",
     "./global.css": "./styles/global.css",
-    "./components/*": "./components/*"
+    "./components/*": "./components/*",
+    "./analytics": "./lib/analytics.ts",
+    "./kylepace-dev": "./lib/kylepace-dev.ts",
+    "./layouts/*": "./layouts/*"
   },
-  "files": ["index.ts", "styles", "components", "assets"],
+  "files": [
+    "index.ts",
+    "styles",
+    "components",
+    "layouts",
+    "lib",
+    "assets"
+  ],
   "dependencies": {
     "@fontsource/atkinson-hyperlegible-mono": "^5.3.0",
-    "@fontsource/atkinson-hyperlegible-next": "^5.3.0"
+    "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
+    "@amplitude/analytics-browser": "^2.49.2",
+    "@amplitude/plugin-session-replay-browser": "^1.36.7"
   },
   "peerDependencies": {
     "astro": ">=5"

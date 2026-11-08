@@ -87,6 +87,8 @@ kp-design is the shared design system for Kyle's websites (kylepace.net, kylepac
 
 - `styles/tokens.css` holds every color, type size, space, radius and motion value. Components read only from tokens; nothing is hard-coded.
 - `styles/global.css` is the base stylesheet (self-hosted Atkinson fonts, resets, prose, skip link, display-setting rules). Sites import it once in their layout.
+- `layouts/DevLayout.astro` and `lib/kylepace-dev.ts` are the one place kylepace.dev-specific things live: the hub's nav and footer links and its Amplitude project. Change a kylepace.dev link there, not in the sites.
+- `lib/analytics.ts` is the only code that talks to Amplitude, for every site. Each site passes its own key and live hosts.
 - Components take props for anything site-specific (wordmark, nav links, footer links). Keep them free of site-specific text, and use absolute URLs in examples, since experiments run on separate Workers.
 - **Every change reaches every site that updates.** Sites pin a commit (`github:kyle-pace/kp-design#<sha>`) or a release tag. After a change: bump `version` in package.json, commit, optionally make a GitHub release, then update the sites' pins. Note breaking changes in the README's changelog.
 - Before tagging, try the change in a real site (a local clone of kylepace.dev with `npm i ../kp-design`) and run its build and axe check in light and dark mode.

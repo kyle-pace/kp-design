@@ -36,7 +36,7 @@
   /* Seattle Grocery Deals' evening blue (Puget evening). */
   --evening: #345a78;
   --evening-ink: light-dark(#24577a, #6cc4e8);
-  /* Extra accents for the skill tree's nine tracks (/labs/skill-tree/). */
+  /* Extra accents (first used by the skill tree, now on kylepace.dev). */
   --coral: #fb7185;
   --coral-ink: light-dark(#be123c, #fda4af);
   --mint: #2dd4bf;
