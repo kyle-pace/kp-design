@@ -87,6 +87,8 @@
   /* Layout */
   --measure: 40rem;
   --wide: 72rem;
+  /* Space between the page edge and content, shared by header, main and footer so they line up. */
+  --gutter: var(--space-6);
   --radius: 1rem;
   --radius-sm: 0.5rem;
 
@@ -112,3 +114,10 @@
 /* Display settings (src/components/DisplaySettings.astro) set these on <html>. */
 :root[data-theme='light'] { color-scheme: light; }
 :root[data-theme='dark'] { color-scheme: dark; }
+
+/* Phones: a tighter gutter, so text runs nearly edge to edge. */
+@media (max-width: 40rem) {
+  :root {
+    --gutter: var(--space-4);
+  }
+}

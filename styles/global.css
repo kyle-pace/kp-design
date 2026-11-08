@@ -31,7 +31,7 @@ body {
 
 main {
   flex: 1;
-  width: min(100% - 2 * var(--space-6), var(--wide));
+  width: min(100% - 2 * var(--gutter), var(--wide));
   margin-inline: auto;
   padding-block: var(--space-12) var(--space-16);
 }
@@ -52,10 +52,10 @@ h4 { font-size: var(--step-0); margin-block: var(--space-8) var(--space-3); }
 h5 { font-size: var(--step-0); margin-block: var(--space-6) var(--space-2); }
 h4, h5 { font-family: var(--font-display); line-height: 1.2; }
 
-/* Phones: the gutter is tight enough that text should run nearly edge to edge. */
+/* Phones: less space between the header and the page, which can't spare the height. */
 @media (max-width: 40rem) {
   main {
-    width: min(100% - 2 * var(--space-4), var(--wide));
+    padding-top: var(--space-6);
   }
 }
 
