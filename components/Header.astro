@@ -11,8 +11,11 @@ interface Props {
   mono?: boolean;
   /** Where the wordmark links. */
   href?: string;
-  /** Nav links. `emphasis` shows one in the accent color (a resume, the other site). */
-  links: { href: string; label: string; emphasis?: boolean }[];
+  /**
+   * Nav links. `emphasis` shows one in the accent color (a resume, the other site).
+   * `hint` is extra text for screen readers only, like " (PDF)".
+   */
+  links: { href: string; label: string; emphasis?: boolean; hint?: string }[];
 }
 
 const { name, suffix, mono = false, href = '/', links } = Astro.props;
@@ -36,6 +39,7 @@ const isCurrent = (link: string) => {
           <li>
             <a href={link.href} class:list={{ emphasis: link.emphasis }} aria-current={isCurrent(link.href) ? 'page' : undefined}>
               {link.label}
+              {link.hint && <span class="visually-hidden">{link.hint}</span>}
             </a>
           </li>
         ))

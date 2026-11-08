@@ -96,5 +96,6 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.2.1**: `Header` links take an optional `hint`, read by screen readers only.
 - **0.2.0**: `DevLayout` (the kylepace.dev page shell), shared analytics (`kp-design/analytics`) and the kylepace.dev nav, footer and Amplitude settings in one place (`kp-design/kylepace-dev`). Adding a link to the kylepace.dev header or footer is now one change here.
 - **0.1.0**: First version, pulled out of kylepace.net and kylepace.dev.
