@@ -1,0 +1,11 @@
+---
+// Put this in <head>. It applies saved display settings before the page paints, so
+// there's no flash of the wrong theme or text size (DisplaySettings.astro saves them).
+---
+
+<script is:inline>
+  try {
+    const saved = JSON.parse(localStorage.getItem('kp-display') || '{}');
+    for (const [key, value] of Object.entries(saved)) document.documentElement.dataset[key] = value;
+  } catch {}
+</script>

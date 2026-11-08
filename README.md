@@ -1,0 +1,84 @@
+# kp-design
+
+The design system for Kyle Pace's websites: design tokens, self-hosted Atkinson Hyperlegible type, the display settings panel, and the shared header and footer. Used by [kylepace.net](https://kylepace.net), [kylepace.dev](https://kylepace.dev) and every experiment on kylepace.dev, so they look and work like one site.
+
+It follows [kyle-pace/principles](https://github.com/kyle-pace/principles): accessibility first (WCAG 2.2 AA in light and dark mode), Atkinson Hyperlegible everywhere, and motion only when a person's device allows it.
+
+## Install
+
+Installed from GitHub, pinned to a tag:
+
+```sh
+npm install github:kyle-pace/kp-design#v0.1.0
+```
+
+No build step. Astro compiles the components inside the site that uses them.
+
+## Use
+
+In the site's layout:
+
+```astro
+---
+import 'kp-design/global.css';
+import { Header, Footer, DisplaySettings, DisplaySettingsInit } from 'kp-design';
+---
+
+<html lang="en">
+  <head>
+    <!-- ... -->
+    <DisplaySettingsInit />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header
+      name="kylepace"
+      suffix=".dev"
+      mono
+      href="https://kylepace.dev/"
+      links={[
+        { href: 'https://kylepace.dev/', label: 'Experiments' },
+        { href: 'https://kylepace.net/', label: 'kylepace.net', emphasis: true },
+      ]}
+    />
+    <main id="main"><slot /></main>
+    <Footer
+      links={[
+        { href: 'https://kylepace.net/', label: 'kylepace.net' },
+        { href: 'mailto:mail@kylepace.net', label: 'Email' },
+        { href: 'https://kylepace.dev/privacy/', label: 'Privacy' },
+      ]}
+    />
+    <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
+  </body>
+</html>
+```
+
+Use absolute URLs in the header and footer when the page might run on a different Worker than the hub (every experiment on kylepace.dev does).
+
+## What's in it
+
+| What | Where | Notes |
+| --- | --- | --- |
+| Design tokens | `styles/tokens.css` (`kp-design/tokens.css`) | Colors in light and dark, accents with AA-safe text shades, type scale, space, radius, motion |
+| Base styles | `styles/global.css` (`kp-design/global.css`) | Imports the tokens and the Atkinson fonts; resets, prose, skip link, and the rules each display setting turns on |
+| `Header` | `components/Header.astro` | Wordmark plus nav. Props: `name`, `suffix`, `mono`, `href`, `links` |
+| `Footer` | `components/Footer.astro` | Link row, Pride dots, profile badges. Props: `links`, `openDoorHref`. A `mailto:` link copies the address |
+| `DisplaySettings` | `components/DisplaySettings.astro` | The floating panel: theme, text size, contrast, font, spacing, motion, links. Prop: `accessibilityHref` |
+| `DisplaySettingsInit` | `components/DisplaySettingsInit.astro` | Goes in `<head>`; applies saved settings before paint |
+| `StatusBadge` | `components/StatusBadge.astro` | "Draft" or "In progress" pill. Prop: `status` |
+| `SocialBadges` | `components/SocialBadges.astro` | LinkedIn, GitHub and Mastodon, with each brand's official logo from `assets/brands/` |
+
+Per-page accents: set `data-accent="sky"` (or tangerine, pink, violet, lime, sunshine, sage, evening, coral, mint) on any element.
+
+Display settings are saved per domain, so a choice made on kylepace.net doesn't carry over to kylepace.dev.
+
+## Releasing a change
+
+1. Change it here, and try it in a real site first (`npm i ../kp-design` in a local clone), including its build and an axe check in light and dark mode.
+2. Bump `version` in `package.json`, commit, and tag it: `git tag v0.2.0 && git push --tags`.
+3. Update each site's dependency to the new tag.
+
+## Changelog
+
+- **0.1.0**: First version, pulled out of kylepace.net and kylepace.dev.
