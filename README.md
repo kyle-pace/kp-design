@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.3.3**: Nav links sit a little closer on phones 360px wide and under, so five links fit on one line.
 - **0.3.2**: kylepace.dev's header uses the same "Kyle Pace" name as kylepace.net instead of the monospace `kylepace.dev` wordmark, so the name and site switch don't move when you swap sites. `Header` still supports `mono` and `suffix`.
 - **0.3.1**: One `--gutter` token (1.5rem, 1rem on phones) for the header, main and footer, so on phones the header lines up with the page instead of sitting 8px further in. Less space above the page on phones.
 - **0.3.0**: A site switch in `Header` (`sites` prop, with `sitesFor('net' | 'dev')` from `kp-design/sites`): two links beside the wordmark for jumping between kylepace.net and kylepace.dev. `DevLayout` uses it, so the kylepace.dev nav drops its kylepace.net link and becomes Labs, Apps, How I build; the footer gains Now. Not breaking: sites that don't pass `sites` look the same.

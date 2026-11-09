@@ -169,6 +169,13 @@ const isCurrent = (link: string) => {
     padding: 0;
   }
 
+  /* The narrowest phones: a little less space between nav links so five fit on one line. */
+  @media (max-width: 22.5rem) {
+    ul {
+      column-gap: var(--space-4);
+    }
+  }
+
   nav a {
     display: inline-block;
     padding-block: var(--space-1);
