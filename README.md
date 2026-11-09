@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.4.0**: `LabLayout`, a shell for standalone experiments: no site header or nav, a small "kylepace.dev" back link in the upper left (with a `bar` slot for the lab's own things on the right), a one-line footer, display settings and analytics. It imports the new `lab.css` instead of `global.css`: fonts, tokens as defaults, the display settings' rules and a reset, with no site layout or prose styles, so each lab sets its own look by overriding the tokens. The display settings' rules moved into `display-settings.css`, which `global.css` imports; nothing changes for sites.
 - **0.3.4**: The kylepace.dev Labs link goes to the new Labs page (`/labs/`) instead of the home page, so the tab lights up there and home can be an overview.
 - **0.3.3**: Nav links sit a little closer on phones 360px wide and under, so five links fit on one line.
 - **0.3.2**: kylepace.dev's header uses the same "Kyle Pace" name as kylepace.net instead of the monospace `kylepace.dev` wordmark, so the name and site switch don't move when you swap sites. `Header` still supports `mono` and `suffix`.

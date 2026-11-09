@@ -1,4 +1,5 @@
 @import './tokens.css';
+@import './display-settings.css';
 @import '@fontsource/atkinson-hyperlegible-next/400.css';
 @import '@fontsource/atkinson-hyperlegible-next/400-italic.css';
 @import '@fontsource/atkinson-hyperlegible-next/600.css';
@@ -185,58 +186,4 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
       to { opacity: 1; translate: 0 0; }
     }
   }
-}
-
-/*
-  Display settings (src/components/DisplaySettings.astro). Each one is a
-  data attribute on <html>, set before the page paints so nothing flashes.
-*/
-
-/* Text size: everything is sized in rem, so scaling the root scales the site. */
-:root[data-text='large'] { font-size: 112.5%; }
-:root[data-text='larger'] { font-size: 125%; }
-
-/* More contrast: also follows the device's own setting. */
-:root[data-contrast='more'] {
-  --ink-muted: var(--ink);
-  --line: light-dark(#7d776c, #8d8896);
-}
-
-@media (prefers-contrast: more) {
-  :root:not([data-contrast='default']) {
-    --ink-muted: var(--ink);
-    --line: light-dark(#7d776c, #8d8896);
-  }
-}
-
-/* Device font: for people who'd rather read in their own system typeface. */
-:root[data-font='system'] {
-  --font-display: ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
-  --font-text: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
-}
-
-/* Wider spacing, following WCAG's text spacing guidance (1.4.12). */
-:root[data-spacing='wide'] body {
-  line-height: 1.9;
-  letter-spacing: 0.06em;
-  word-spacing: 0.16em;
-}
-
-:root[data-spacing='wide'] p {
-  margin-block-end: 1.5em;
-}
-
-/* Underline every link, not only links in running text. */
-:root[data-links='underline'] a {
-  text-decoration-line: underline;
-}
-
-/* Reduce motion on request, even if the device allows it. */
-:root[data-motion='reduce'] *,
-:root[data-motion='reduce'] *::before,
-:root[data-motion='reduce'] *::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
 }

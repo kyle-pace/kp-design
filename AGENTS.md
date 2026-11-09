@@ -87,6 +87,7 @@ kp-design is the shared design system for Kyle's websites (kylepace.net, kylepac
 
 - `styles/tokens.css` holds every color, type size, space, radius and motion value. Components read only from tokens; nothing is hard-coded.
 - `styles/global.css` is the base stylesheet (self-hosted Atkinson fonts, resets, prose, skip link, display-setting rules). Sites import it once in their layout.
+- `layouts/LabLayout.astro` and `styles/lab.css` are for standalone experiments on kylepace.dev: their own pages, not pages of the site. No header or nav, just a back link to kylepace.dev, a one-line footer, display settings and analytics. Labs restyle themselves by overriding tokens, so keep `lab.css` free of anything that sets a look beyond the tokens' defaults.
 - `layouts/DevLayout.astro` and `lib/kylepace-dev.ts` are the one place kylepace.dev-specific things live: the hub's nav and footer links and its Amplitude project. Change a kylepace.dev link there, not in the sites.
 - `lib/analytics.ts` is the only code that talks to Amplitude, for every site. Each site passes its own key and live hosts.
 - Components take props for anything site-specific (wordmark, nav links, footer links). Keep them free of site-specific text, and use absolute URLs in examples, since experiments run on separate Workers.

@@ -1,0 +1,159 @@
+---
+// The page shell for a standalone experiment on kylepace.dev: its own page, not a page
+// of the site. No site header or nav; a small "kylepace.dev" link back in the upper
+// left, a one-line footer (privacy, accessibility, connections), the display settings
+// and analytics. Everything else, including the look, belongs to the lab: it imports
+// lab.css only (not global.css) and overrides the tokens to make itself its own.
+//
+// Slots: default (the page), "head" (extra <head> tags), "bar" (the right side of the
+// top bar, e.g. a status badge or the lab's own links).
+import '../styles/lab.css';
+import DisplaySettings from '../components/DisplaySettings.astro';
+import DisplaySettingsInit from '../components/DisplaySettingsInit.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Share image, as a path on kylepace.dev ("/transit/share.png") or a full URL. */
+  image: string;
+  imageAlt: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  /** Favicon path; defaults to kylepace.dev's. */
+  favicon?: string;
+  /** Browser UI color in light and dark mode. Defaults to the tokens' backgrounds. */
+  themeColor?: { light: string; dark: string };
+  /** Where the back link goes, and what it says. */
+  backHref?: string;
+  backLabel?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  image,
+  imageAlt,
+  imageWidth = 1200,
+  imageHeight = 630,
+  favicon = '/favicon.svg',
+  themeColor = { light: '#fbf8f3', dark: '#141317' },
+  backHref = 'https://kylepace.dev/labs/',
+  backLabel = 'kylepace.dev',
+  noindex = false,
+} = Astro.props;
+
+const site = Astro.site ?? new URL('https://kylepace.dev');
+const canonical = new URL(Astro.url.pathname, site);
+// A lab's title stands on its own; the site name follows, so tabs still say where it lives.
+const pageTitle = `${title} · kylepace.dev`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href={favicon} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="kylepace.dev" />
+    <meta property="og:image" content={new URL(image, site)} />
+    <meta property="og:image:width" content={String(imageWidth)} />
+    <meta property="og:image:height" content={String(imageHeight)} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="fediverse:creator" content="@kylepace@mastodon.social" />
+    <meta name="theme-color" content={themeColor.light} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={themeColor.dark} media="(prefers-color-scheme: dark)" />
+    <slot name="head" />
+    <DisplaySettingsInit />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <nav class="lab-bar" aria-label="kylepace.dev">
+      <a class="lab-back" href={backHref}>
+        <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16"
+          ><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          ></path></svg
+        >
+        <span><span class="visually-hidden">Back to </span>{backLabel}</span>
+      </a>
+      <div class="lab-bar-end"><slot name="bar" /></div>
+    </nav>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="lab-foot">
+      <p>
+        A lab by <a href="https://kylepace.net/">Kyle Pace</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://kylepace.dev/privacy/">Privacy</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://kylepace.dev/accessibility/">Accessibility</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://kylepace.dev/connections/">Connections</a>
+      </p>
+    </footer>
+    <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
+    <script>
+      import { startAnalytics } from '../lib/analytics';
+      import { DEV_ANALYTICS } from '../lib/kylepace-dev';
+      startAnalytics(DEV_ANALYTICS);
+    </script>
+  </body>
+</html>
+
+<style>
+  .lab-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--gutter);
+  }
+
+  .lab-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding-inline: var(--space-2);
+    margin-inline-start: calc(-1 * var(--space-2));
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    text-decoration: none;
+  }
+
+  .lab-back:hover {
+    color: var(--ink);
+  }
+
+  .lab-bar-end {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .lab-foot {
+    padding: var(--space-8) var(--gutter) calc(var(--space-8) + 4rem);
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+  }
+
+  .lab-foot p {
+    margin: 0;
+  }
+
+  .lab-foot a {
+    color: inherit;
+  }
+</style>
