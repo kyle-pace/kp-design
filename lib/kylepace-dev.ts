@@ -8,7 +8,7 @@ export const DEV_ANALYTICS = {
 
 // The way back to kylepace.net is the site switch beside the wordmark (lib/sites.ts).
 export const DEV_NAV = [
-  { href: 'https://kylepace.dev/', label: 'Labs' },
+  { href: 'https://kylepace.dev/labs/', label: 'Labs' },
   { href: 'https://kylepace.dev/apps/', label: 'Apps' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
 ];
