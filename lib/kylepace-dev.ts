@@ -11,12 +11,15 @@ export const DEV_NAV = [
   { href: 'https://kylepace.dev/labs/', label: 'Labs' },
   { href: 'https://kylepace.dev/apps/', label: 'Apps' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
+  // Same short address kylepace.net shares; it forwards to the PDF on GitHub Pages.
+  { href: 'https://kylepace.net/resume/', label: 'Resume', emphasis: true, hint: ' (PDF)' },
 ];
 
 export const DEV_FOOTER = [
   { href: 'https://kylepace.net/', label: 'kylepace.net' },
   { href: 'https://kylepace.net/about/', label: 'About Kyle' },
   { href: 'https://kylepace.net/now/', label: 'Now' },
+  { href: 'https://kylepace.net/resume/', label: 'Resume (PDF)' },
   { href: 'https://github.com/kyle-pace', label: 'GitHub' },
   { href: 'mailto:mail@kylepace.net', label: 'Email' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
