@@ -91,15 +91,12 @@ const pageTitle = `${title} · kylepace.dev`;
       <slot />
     </main>
     <footer class="lab-foot">
-      <p>
-        A lab by <a href="https://kylepace.net/">Kyle Pace</a>
-        <span aria-hidden="true">·</span>
-        <a href="https://kylepace.dev/privacy/">Privacy</a>
-        <span aria-hidden="true">·</span>
-        <a href="https://kylepace.dev/accessibility/">Accessibility</a>
-        <span aria-hidden="true">·</span>
-        <a href="https://kylepace.dev/connections/">Connections</a>
-      </p>
+      <p>Made by <a href="https://kylepace.net/">Kyle Pace</a>.</p>
+      <ul>
+        <li><a href="https://kylepace.dev/privacy/">Privacy</a></li>
+        <li><a href="https://kylepace.dev/accessibility/">Accessibility</a></li>
+        <li><a href="https://kylepace.dev/connections/">What this connects to</a></li>
+      </ul>
     </footer>
     <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
     <script>
@@ -128,7 +125,6 @@ const pageTitle = `${title} · kylepace.dev`;
     margin-inline-start: calc(-1 * var(--space-2));
     border-radius: var(--radius-sm);
     color: var(--ink-muted);
-    font-family: var(--font-mono);
     font-size: var(--step--1);
     text-decoration: none;
   }
@@ -149,8 +145,24 @@ const pageTitle = `${title} · kylepace.dev`;
     font-size: var(--step--1);
   }
 
-  .lab-foot p {
+  .lab-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    align-items: baseline;
+  }
+
+  .lab-foot p,
+  .lab-foot ul {
     margin: 0;
+  }
+
+  .lab-foot ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    padding: 0;
+    list-style: none;
   }
 
   .lab-foot a {
