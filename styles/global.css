@@ -173,16 +173,18 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
   }
 
   /* Gentle reveal as sections scroll in (CSS scroll-driven animations,
-     an enhancement where supported). */
+     an enhancement where supported). The fade is over once the first 4rem of the
+     element is on screen, however tall it is, so text never sits half-faded (and
+     under the contrast minimum) while someone is reading it. */
   @supports (animation-timeline: view()) {
     .reveal {
       animation: reveal linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 40%;
+      animation-range: entry 0 entry 4rem;
     }
 
     @keyframes reveal {
-      from { opacity: 0; translate: 0 1.5rem; }
+      from { opacity: 0; translate: 0 1rem; }
       to { opacity: 1; translate: 0 0; }
     }
   }

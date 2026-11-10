@@ -1,6 +1,6 @@
 {
   "name": "kp-design",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Kyle Pace's design system for his websites: tokens, Atkinson Hyperlegible type, display settings, header and footer.",
   "type": "module",
   "repository": "github:kyle-pace/kp-design",
