@@ -6,8 +6,10 @@ interface Props {
   links: { href: string; label: string }[];
   /** Where "Say hi" goes. */
   openDoorHref?: string;
+  /** The site's RSS feed. Adds an RSS badge after the profile badges. */
+  rssHref?: string;
 }
-const { links, openDoorHref = 'https://kylepace.net/open-door/' } = Astro.props;
+const { links, openDoorHref = 'https://kylepace.net/open-door/', rssHref } = Astro.props;
 
 const year = new Date().getFullYear();
 
@@ -57,7 +59,7 @@ const pride = [
       </p>
     </div>
     <div class="elsewhere">
-      <SocialBadges />
+      <SocialBadges rssHref={rssHref} />
       <p class="muted">© {year} Kyle Pace</p>
     </div>
   </div>
@@ -154,8 +156,17 @@ const pride = [
 
   .elsewhere {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-2) var(--space-4);
+  }
+
+  /* On the narrowest phones the copyright goes under the badges, so it doesn't end up
+     beneath the display settings button in the corner. */
+  @media (max-width: 22.5rem) {
+    .elsewhere p {
+      flex-basis: 100%;
+    }
   }
 
   .open-door {

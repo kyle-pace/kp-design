@@ -1,10 +1,22 @@
 ---
-// Profile badges in the footer: LinkedIn, GitHub and Mastodon.
+// Badges in the footer: LinkedIn, GitHub and Mastodon profiles, plus the site's RSS feed
+// when the site passes one in (`rssHref`).
 // Logos are each brand's official files, unaltered, in src/assets/brands/ named
 // after the profile (SVG or PNG). SVGs are inlined so a one-color mark (GitHub)
 // can follow the theme; a badge only appears once its logo file is there.
 // Sources: LinkedIn In-Bug (brand.linkedin.com), GitHub mark (@primer/octicons),
 // Mastodon logo (mastodon/mastodon repo).
+interface Props {
+  /** The site's RSS feed. Leave it out on a site with no feed and no RSS badge shows. */
+  rssHref?: string;
+}
+const { rssHref } = Astro.props;
+
+// The standard feed icon (a dot and two arcs). It isn't a brand logo, so it's drawn here
+// and takes the text color in both themes.
+const rssIcon =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="5.5" cy="18.5" r="2.5"/><path d="M3 3v3.4c8.06 0 14.6 6.54 14.6 14.6H21C21 11.06 12.94 3 3 3z"/><path d="M3 9.5v3.4c4.47 0 8.1 3.63 8.1 8.1h3.4C14.5 14.65 9.35 9.5 3 9.5z"/></svg>';
+
 const svgs = import.meta.glob<string>('../assets/brands/*.svg', { eager: true, query: '?raw', import: 'default' });
 const pngs = import.meta.glob<{ default: { src: string } }>('../assets/brands/*.png', { eager: true });
 
@@ -19,14 +31,23 @@ const profiles = [
     png: pngs[`../assets/brands/${p.name}.png`]?.default.src,
   }))
   .filter((p) => p.svg || p.png);
+
+// rel="me" tells other sites (Mastodon, for one) that a profile is Kyle's. A feed isn't a
+// profile, so it gets type="application/rss+xml" instead, which feed readers look for.
+const badges = [
+  ...profiles.map((p) => ({ ...p, rel: 'me', type: undefined })),
+  ...(rssHref
+    ? [{ name: 'rss', label: 'RSS feed', href: rssHref, svg: rssIcon, png: undefined, rel: undefined, type: 'application/rss+xml' }]
+    : []),
+];
 ---
 
 {
-  profiles.length > 0 && (
-    <ul class="badges" aria-label="Profiles">
-      {profiles.map((p) => (
+  badges.length > 0 && (
+    <ul class="badges" aria-label={rssHref ? 'Profiles and feed' : 'Profiles'}>
+      {badges.map((p) => (
         <li>
-          <a class="badge" href={p.href} rel="me" aria-label={p.label}>
+          <a class="badge" href={p.href} rel={p.rel} type={p.type} aria-label={p.label}>
             {p.svg ? <span class="logo" aria-hidden="true" set:html={p.svg} /> : <img class="logo" src={p.png} alt="" />}
           </a>
         </li>
@@ -63,7 +84,7 @@ const profiles = [
     object-fit: contain;
   }
 
-  /* One-color marks (GitHub) take the text color, so they work in both themes. */
+  /* One-color marks (GitHub, RSS) take the text color, so they work in both themes. */
   .logo :global(svg) {
     fill: currentColor;
   }
