@@ -75,11 +75,11 @@ Use absolute URLs in the header and footer when the page might run on a differen
 | Design tokens | `styles/tokens.css` (`kp-design/tokens.css`) | Colors in light and dark, accents with AA-safe text shades, type scale, space, radius, motion |
 | Base styles | `styles/global.css` (`kp-design/global.css`) | Imports the tokens and the Atkinson fonts; resets, prose, skip link, and the rules each display setting turns on |
 | `Header` | `components/Header.astro` | Wordmark plus nav. Props: `name`, `suffix`, `mono`, `href`, `links` |
-| `Footer` | `components/Footer.astro` | Link row, Pride dots, profile badges. Props: `links`, `openDoorHref`. A `mailto:` link copies the address |
+| `Footer` | `components/Footer.astro` | Link row, Pride dots, profile badges. Props: `links`, `openDoorHref`, `rssHref` (adds an RSS badge). A `mailto:` link copies the address |
 | `DisplaySettings` | `components/DisplaySettings.astro` | The floating panel: theme, text size, contrast, font, spacing, motion, links. Prop: `accessibilityHref` |
 | `DisplaySettingsInit` | `components/DisplaySettingsInit.astro` | Goes in `<head>`; applies saved settings before paint |
 | `StatusBadge` | `components/StatusBadge.astro` | "Draft" or "In progress" pill. Prop: `status` |
-| `SocialBadges` | `components/SocialBadges.astro` | LinkedIn, GitHub and Mastodon, with each brand's official logo from `assets/brands/` |
+| `SocialBadges` | `components/SocialBadges.astro` | LinkedIn, GitHub and Mastodon, with each brand's official logo from `assets/brands/`. Prop: `rssHref` adds an RSS badge for the site's feed |
 | `DevLayout` | `layouts/DevLayout.astro` (`kp-design/layouts/DevLayout.astro`) | The whole page shell for kylepace.dev and its experiments: head and share-card tags, header, footer, display settings and analytics. Props: `title`, `description`, `accent`, `image`, `imageAlt`, `imageWidth`, `imageHeight`, `noindex`; a `head` slot for extra tags |
 | Analytics | `lib/analytics.ts` (`kp-design/analytics`) | `startAnalytics({ apiKey, liveHosts })`, `isOptedOut`, `setOptOut`, `track`. The private Amplitude setup from the principles |
 | kylepace.dev settings | `lib/kylepace-dev.ts` (`kp-design/kylepace-dev`) | The hub's nav and footer links and its Amplitude project, used by `DevLayout` |
@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.5.0**: `Footer` and `SocialBadges` take an optional `rssHref`: a site with a feed gets an RSS badge after the profile badges. Not breaking: sites that don't pass it look the same.
 - **0.4.3**: the scroll reveal's fade finishes once the first 4rem of an element is on screen, so tall sections no longer sit half-faded (and under the contrast minimum) while in view.
 - **0.4.2**: kylepace.dev's nav and footer link to Kyle's resume (kylepace.net/resume/, which forwards to the PDF), shown in the accent color like on kylepace.net.
 - **0.4.1**: `LabLayout`'s back link uses the text face instead of monospace, and its footer lists its links instead of joining them with middle dots.
