@@ -105,7 +105,7 @@ const pageTitle = `${title} · kylepace.dev`;
                 <circle cx="10" cy="6.25" r="1.25" fill="currentColor" />
                 <path d="M10 9v5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
               </svg>
-              <span>About this project</span>
+              <span>About<span class="lab-about-more"> this project</span></span>
             </a>
           )
         }
@@ -182,6 +182,13 @@ const pageTitle = `${title} · kylepace.dev`;
 
   .lab-about svg {
     flex: none;
+  }
+
+  /* On the narrowest phones it says just "About", so it never pushes past the edge. */
+  @media (max-width: 24rem) {
+    .lab-about-more {
+      display: none;
+    }
   }
 
   .lab-about:hover {
