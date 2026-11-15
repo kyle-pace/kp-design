@@ -7,6 +7,10 @@
 //
 // Slots: default (the page), "head" (extra <head> tags), "bar" (the right side of the
 // top bar, e.g. a status badge or the lab's own links).
+//
+// Pass `about` (the lab's About page) and the bar ends with a clear "About this project"
+// button on every other page, so a first-time visitor can always find out what they're
+// looking at. On the About page itself it's left out; put a link back to the lab in "bar".
 import '../styles/lab.css';
 import DisplaySettings from '../components/DisplaySettings.astro';
 import DisplaySettingsInit from '../components/DisplaySettingsInit.astro';
@@ -26,6 +30,8 @@ interface Props {
   /** Where the back link goes, and what it says. */
   backHref?: string;
   backLabel?: string;
+  /** The lab's About page ("/transit/about/"). Shows the "About this project" button. */
+  about?: string;
   noindex?: boolean;
 }
 
@@ -40,8 +46,12 @@ const {
   themeColor = { light: '#fbf8f3', dark: '#141317' },
   backHref = 'https://kylepace.dev/labs/',
   backLabel = 'kylepace.dev',
+  about,
   noindex = false,
 } = Astro.props;
+
+const trim = (p: string) => p.replace(/\/+$/, '');
+const showAbout = about && trim(Astro.url.pathname) !== trim(about);
 
 const site = Astro.site ?? new URL('https://kylepace.dev');
 const canonical = new URL(Astro.url.pathname, site);
@@ -85,7 +95,21 @@ const pageTitle = `${title} · kylepace.dev`;
         >
         <span><span class="visually-hidden">Back to </span>{backLabel}</span>
       </a>
-      <div class="lab-bar-end"><slot name="bar" /></div>
+      <div class="lab-bar-end">
+        <slot name="bar" />
+        {
+          showAbout && (
+            <a class="lab-about" href={about}>
+              <svg aria-hidden="true" viewBox="0 0 20 20" width="20" height="20">
+                <circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="10" cy="6.25" r="1.25" fill="currentColor" />
+                <path d="M10 9v5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+              </svg>
+              <span>About this project</span>
+            </a>
+          )
+        }
+      </div>
     </nav>
     <main id="main">
       <slot />
@@ -137,6 +161,40 @@ const pageTitle = `${title} · kylepace.dev`;
     display: flex;
     gap: var(--space-3);
     align-items: center;
+  }
+
+  /* A real button-sized link in the lab's own colors: its ink, outlined, filled on hover. */
+  .lab-about {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .lab-about svg {
+    flex: none;
+  }
+
+  .lab-about:hover {
+    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lab-about {
+      transition:
+        background-color var(--duration-fast, 150ms) ease-out,
+        border-color var(--duration-fast, 150ms) ease-out;
+    }
   }
 
   .lab-foot {

@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.6.0**: `LabLayout` takes an `about` prop (the lab's About page). When set, the top bar ends with a clear "About this project" button (an info icon, the lab's own ink, 44 px tall) on every page but the About page itself. Labs that put their own About link in the `bar` slot should switch to the prop. Not breaking.
 - **0.5.0**: Analytics skips automated browsers and crawlers (`navigator.webdriver`, headless Chrome, Lighthouse, bots), and tags Kyle's own browsers: opening any page with `?internal=on` sets the user property `internal_user: true` (false for everyone else) and removes the parameter from the address; `?internal=off` clears it. `isAutomated()` and `isInternalBrowser()` are exported for sites with their own analytics code. Not breaking.
 - **0.4.3**: the scroll reveal's fade finishes once the first 4rem of an element is on screen, so tall sections no longer sit half-faded (and under the contrast minimum) while in view.
 - **0.4.2**: kylepace.dev's nav and footer link to Kyle's resume (kylepace.net/resume/, which forwards to the PDF), shown in the accent color like on kylepace.net.
