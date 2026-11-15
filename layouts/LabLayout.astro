@@ -41,9 +41,11 @@ interface Props {
   lab?: { name: string; href: string };
   /**
    * One to three sentences shown in a welcome dialog on a visitor's first visit: what the
-   * experiment is and what to try. Uses `lab.name` (or the title) and links to `about`.
+   * experiment is and what to try. Titled with `lab.name` (or the page title) unless you
+   * pass `{ name, text }`, for labs whose `lab.name` reads as "Back to the search".
+   * Links to `about`.
    */
-  welcome?: string;
+  welcome?: string | { name: string; text: string };
   noindex?: boolean;
 }
 
@@ -125,7 +127,15 @@ const pageTitle = `${title} · kylepace.dev`;
       </ul>
     </footer>
     <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
-    {welcome && !onAbout && <LabWelcome name={lab?.name ?? title} text={welcome} about={about} />}
+    {
+      welcome && !onAbout && (
+        <LabWelcome
+          name={typeof welcome === 'string' ? (lab?.name ?? title) : welcome.name}
+          text={typeof welcome === 'string' ? welcome : welcome.text}
+          about={about}
+        />
+      )
+    }
     <script>
       import { startAnalytics } from '../lib/analytics';
       import { DEV_ANALYTICS } from '../lib/kylepace-dev';
