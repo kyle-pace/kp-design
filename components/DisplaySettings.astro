@@ -182,6 +182,34 @@ const settings = [
   });
 
   // "Reduce motion" also skips the page transitions between pages.
+  // The floating button tucks away while the page scrolls down, so it never sits on top of
+  // what someone is reading or about to tap, and comes back when they scroll up, stop near
+  // the top or reach the bottom. Keyboard focus and an open panel always show it.
+  const toggle = document.querySelector<HTMLButtonElement>('.display-toggle');
+  if (toggle) {
+    let lastY = window.scrollY;
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 48;
+      const open = panel?.matches(':popover-open') ?? false;
+      if (open || y < 80 || atBottom || y < lastY - 6) toggle.classList.remove('tucked');
+      else if (y > lastY + 6) toggle.classList.add('tucked');
+      lastY = y;
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+  }
+
   const skipIfReduced = (event: Event) => {
     if (root.dataset.motion === 'reduce') {
       (event as Event & { viewTransition?: { skipTransition(): void } }).viewTransition?.skipTransition();
@@ -208,6 +236,21 @@ const settings = [
     color: var(--bg);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
     cursor: pointer;
+  }
+
+  /* Tucked below the edge while the page scrolls down (see the script above). */
+  .display-toggle.tucked:not(:focus-visible) {
+    translate: 0 calc(100% + var(--space-4) + 0.5rem);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(:root:not([data-motion='reduce'])) .display-toggle {
+      transition:
+        translate 200ms var(--ease-out, ease-out),
+        opacity 200ms var(--ease-out, ease-out);
+    }
   }
 
   /* Clicks land on the button itself, not the icon inside it. */
