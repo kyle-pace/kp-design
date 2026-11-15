@@ -11,12 +11,14 @@
 // The bar starts with "More labs by Kyle" (back to kylepace.dev/labs/). Pass `about` (the
 // lab's About page) and it ends with a clear "About this project" button on every other
 // page, so a first-time visitor can always find out what they're looking at. Pass `lab`
-// too, and the About page ends with "Back to <lab name>" instead.
+// too, and the About page ends with "Back to <lab name>" instead. Pass `welcome` (a few
+// sentences) and a first-time visitor is greeted with them in a dialog, once per lab.
 import '../styles/lab.css';
 import DisplaySettings from '../components/DisplaySettings.astro';
 import DisplaySettingsInit from '../components/DisplaySettingsInit.astro';
 import AboutLink from '../components/AboutLink.astro';
 import BarButton from '../components/BarButton.astro';
+import LabWelcome from '../components/LabWelcome.astro';
 
 interface Props {
   title: string;
@@ -37,6 +39,11 @@ interface Props {
   about?: string;
   /** The lab's name and main page. On the About page, shows "Back to <name>". */
   lab?: { name: string; href: string };
+  /**
+   * One to three sentences shown in a welcome dialog on a visitor's first visit: what the
+   * experiment is and what to try. Uses `lab.name` (or the title) and links to `about`.
+   */
+  welcome?: string;
   noindex?: boolean;
 }
 
@@ -53,6 +60,7 @@ const {
   backLabel = 'More labs by Kyle',
   about,
   lab,
+  welcome,
   noindex = false,
 } = Astro.props;
 
@@ -117,6 +125,7 @@ const pageTitle = `${title} · kylepace.dev`;
       </ul>
     </footer>
     <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
+    {welcome && !onAbout && <LabWelcome name={lab?.name ?? title} text={welcome} about={about} />}
     <script>
       import { startAnalytics } from '../lib/analytics';
       import { DEV_ANALYTICS } from '../lib/kylepace-dev';
