@@ -1,0 +1,118 @@
+---
+// A button-sized link for the top of a lab's page: "More labs by Kyle", "About this
+// project", "Back to <lab>". It takes the page's own ink, so it fits any lab's look.
+// `short` replaces the label on the narrowest phones; `quiet` is the softer version for
+// links away from the lab.
+interface Props {
+  href: string;
+  label: string;
+  short?: string;
+  icon: 'info' | 'back' | 'labs';
+  quiet?: boolean;
+}
+const { href, label, short, icon, quiet = false } = Astro.props;
+const rest = short && label.startsWith(short) ? label.slice(short.length) : null;
+---
+
+<a class:list={['bar-button', { quiet }]} href={href}>
+  {
+    icon === 'info' && (
+      <svg aria-hidden="true" viewBox="0 0 20 20" width="20" height="20">
+        <circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="10" cy="6.25" r="1.25" fill="currentColor" />
+        <path d="M10 9v5.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+      </svg>
+    )
+  }
+  {
+    icon === 'back' && (
+      <svg aria-hidden="true" viewBox="0 0 20 20" width="20" height="20">
+        <path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    )
+  }
+  {
+    icon === 'labs' && (
+      <svg aria-hidden="true" viewBox="0 0 20 20" width="20" height="20">
+        <rect x="3" y="3" width="5.5" height="5.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <rect x="11.5" y="3" width="5.5" height="5.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <rect x="3" y="11.5" width="5.5" height="5.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <rect x="11.5" y="11.5" width="5.5" height="5.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    )
+  }
+  {
+    rest ? (
+      <span>
+        {short}
+        <span class="more">{rest}</span>
+      </span>
+    ) : short ? (
+      <span>
+        <span class="more-full">{label}</span>
+        <span class="more-short">{short}</span>
+      </span>
+    ) : (
+      <span>{label}</span>
+    )
+  }
+</a>
+
+<style>
+  .bar-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0 var(--space-4) 0 var(--space-3);
+    border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font-size: var(--step-0);
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Softer: muted ink and a lighter outline, for links that leave the lab. */
+  .bar-button.quiet {
+    border-color: color-mix(in srgb, var(--ink-muted) 45%, transparent);
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  svg {
+    flex: none;
+  }
+
+  .bar-button:hover {
+    border-color: var(--ink);
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
+    color: var(--ink);
+  }
+
+  .more-short {
+    display: none;
+  }
+
+  /* On the narrowest phones the shorter label shows, so the bar never pushes past the edge. */
+  @media (max-width: 24rem) {
+    .more,
+    .more-full {
+      display: none;
+    }
+    .more-short {
+      display: inline;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .bar-button {
+      transition:
+        background-color var(--duration-fast, 150ms) ease-out,
+        border-color var(--duration-fast, 150ms) ease-out,
+        color var(--duration-fast, 150ms) ease-out;
+    }
+  }
+</style>
