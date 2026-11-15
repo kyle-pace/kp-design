@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.6.2**: The About button is its own component, `AboutLink` (`import { AboutLink } from 'kp-design'`), for pages that don't use LabLayout's top bar. Looks the same.
 - **0.6.1**: The About button says just "About" below 24rem wide, so it fits a 320 px phone.
 - **0.6.0**: `LabLayout` takes an `about` prop (the lab's About page). When set, the top bar ends with a clear "About this project" button (an info icon, the lab's own ink, 44 px tall) on every page but the About page itself. Labs that put their own About link in the `bar` slot should switch to the prop. Not breaking.
 - **0.5.0**: Analytics skips automated browsers and crawlers (`navigator.webdriver`, headless Chrome, Lighthouse, bots), and tags Kyle's own browsers: opening any page with `?internal=on` sets the user property `internal_user: true` (false for everyone else) and removes the parameter from the address; `?internal=off` clears it. `isAutomated()` and `isInternalBrowser()` are exported for sites with their own analytics code. Not breaking.
