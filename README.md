@@ -81,7 +81,7 @@ Use absolute URLs in the header and footer when the page might run on a differen
 | `StatusBadge` | `components/StatusBadge.astro` | "Draft" or "In progress" pill. Prop: `status` |
 | `SocialBadges` | `components/SocialBadges.astro` | LinkedIn, GitHub and Mastodon, with each brand's official logo from `assets/brands/` |
 | `DevLayout` | `layouts/DevLayout.astro` (`kp-design/layouts/DevLayout.astro`) | The whole page shell for kylepace.dev and its experiments: head and share-card tags, header, footer, display settings and analytics. Props: `title`, `description`, `accent`, `image`, `imageAlt`, `imageWidth`, `imageHeight`, `noindex`; a `head` slot for extra tags |
-| Analytics | `lib/analytics.ts` (`kp-design/analytics`) | `startAnalytics({ apiKey, liveHosts })`, `isOptedOut`, `setOptOut`, `track`. The private Amplitude setup from the principles |
+| Analytics | `lib/analytics.ts` (`kp-design/analytics`) | `startAnalytics({ apiKey, liveHosts })`, `isOptedOut`, `setOptOut`, `track`, `isAutomated`, `isInternalBrowser`. The private Amplitude setup from the principles, skipping bots and tagging Kyle's browsers (`?internal=on`) |
 | kylepace.dev settings | `lib/kylepace-dev.ts` (`kp-design/kylepace-dev`) | The hub's nav and footer links and its Amplitude project, used by `DevLayout` |
 
 Per-page accents: set `data-accent="sky"` (or tangerine, pink, violet, lime, sunshine, sage, evening, coral, mint) on any element.
@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.5.0**: Analytics skips automated browsers and crawlers (`navigator.webdriver`, headless Chrome, Lighthouse, bots), and tags Kyle's own browsers: opening any page with `?internal=on` sets the user property `internal_user: true` (false for everyone else) and removes the parameter from the address; `?internal=off` clears it. `isAutomated()` and `isInternalBrowser()` are exported for sites with their own analytics code. Not breaking.
 - **0.4.3**: the scroll reveal's fade finishes once the first 4rem of an element is on screen, so tall sections no longer sit half-faded (and under the contrast minimum) while in view.
 - **0.4.2**: kylepace.dev's nav and footer link to Kyle's resume (kylepace.net/resume/, which forwards to the PDF), shown in the accent color like on kylepace.net.
 - **0.4.1**: `LabLayout`'s back link uses the text face instead of monospace, and its footer lists its links instead of joining them with middle dots.

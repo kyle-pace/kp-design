@@ -1,6 +1,8 @@
 // Amplitude analytics, set up the private way every one of Kyle's sites uses:
 // autocapture, no IP address, an ID kept in localStorage (no cookies), off for Global
 // Privacy Control, Do Not Track or the site's opt-out, and only on the live domain.
+// Automated browsers and crawlers send nothing, and Kyle's own browsers are tagged
+// `internal_user: true` (open any page with ?internal=on once) so charts can leave them out.
 // Session Replay records a small share of sessions with everything masked, and its code
 // only loads for those sessions.
 //
@@ -20,6 +22,36 @@ export interface AnalyticsOptions {
 
 const OPT_OUT_KEY = 'kp-analytics-opt-out';
 const REPLAY_KEY = 'kp-replay';
+const INTERNAL_KEY = 'kp-internal';
+
+/**
+ * Headless and automated browsers: Playwright, Puppeteer and Selenium set navigator.webdriver;
+ * headless Chrome, Lighthouse and crawlers name themselves in the user agent.
+ */
+export function isAutomated(): boolean {
+  if (navigator.webdriver === true) return true;
+  return /HeadlessChrome|Lighthouse|bot\/|crawl|spider|slurp|facebookexternalhit/i.test(navigator.userAgent || '');
+}
+
+/**
+ * Reads ?internal=on or ?internal=off, remembers the answer in this browser and removes the
+ * parameter from the address. Returns whether this browser is marked as one of Kyle's own.
+ */
+export function isInternalBrowser(): boolean {
+  try {
+    const url = new URL(location.href);
+    const flag = url.searchParams.get('internal');
+    if (flag === 'on') localStorage.setItem(INTERNAL_KEY, '1');
+    if (flag === 'off') localStorage.removeItem(INTERNAL_KEY);
+    if (flag !== null) {
+      url.searchParams.delete('internal');
+      history.replaceState(history.state, '', url);
+    }
+    return localStorage.getItem(INTERNAL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 export function isOptedOut(): boolean {
   try {
@@ -59,9 +91,11 @@ function inReplaySample(rate: number): boolean {
 }
 
 export async function startAnalytics({ apiKey, liveHosts, replayRate = 0.05 }: AnalyticsOptions) {
+  // Runs first everywhere, so ?internal=on is remembered and tidied away even where nothing is sent.
+  const internal = isInternalBrowser();
   if (!apiKey) return;
   if (!liveHosts.includes(location.hostname)) return;
-  if (browserSaysNo() || isOptedOut()) return;
+  if (browserSaysNo() || isOptedOut() || isAutomated()) return;
 
   if (inReplaySample(replayRate)) {
     const { sessionReplayPlugin } = await import('@amplitude/plugin-session-replay-browser');
@@ -73,6 +107,7 @@ export async function startAnalytics({ apiKey, liveHosts, replayRate = 0.05 }: A
     identityStorage: 'localStorage',
     trackingOptions: { ipAddress: false },
   });
+  amplitude.identify(new amplitude.Identify().set('internal_user', internal));
 }
 
 /** Custom events, in Title Case, past-tense verb first ("Clicked Resume"). */
