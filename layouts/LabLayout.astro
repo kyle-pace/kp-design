@@ -124,11 +124,14 @@ const pageTitle = `${title} · kylepace.dev`;
 </html>
 
 <style>
+  /* On a narrow phone, a lab's own links and the About button wrap under the back link
+     instead of pushing the page sideways. */
   .lab-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-4);
+    gap: var(--space-1) var(--space-4);
     padding: var(--space-3) var(--gutter);
   }
 
@@ -151,8 +154,11 @@ const pageTitle = `${title} · kylepace.dev`;
 
   .lab-bar-end {
     display: flex;
-    gap: var(--space-3);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-1) var(--space-3);
     align-items: center;
+    margin-inline-start: auto;
   }
 
   .lab-foot {

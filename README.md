@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.6.3**: LabLayout's top bar wraps on narrow phones, so a lab's own links plus the About button never scroll the page sideways.
 - **0.6.2**: The About button is its own component, `AboutLink` (`import { AboutLink } from 'kp-design'`), for pages that don't use LabLayout's top bar. Looks the same.
 - **0.6.1**: The About button says just "About" below 24rem wide, so it fits a 320 px phone.
 - **0.6.0**: `LabLayout` takes an `about` prop (the lab's About page). When set, the top bar ends with a clear "About this project" button (an info icon, the lab's own ink, 44 px tall) on every page but the About page itself. Labs that put their own About link in the `bar` slot should switch to the prop. Not breaking.
