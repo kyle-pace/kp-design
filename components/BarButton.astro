@@ -96,13 +96,24 @@ const rest = short && label.startsWith(short) ? label.slice(short.length) : null
     display: none;
   }
 
-  /* On the narrowest phones the shorter label shows, so the bar never pushes past the edge. */
+  /* On phones the shorter label shows, so the bar fits on one line: the quiet button
+     ("More labs") shortens below 36rem, the main one ("About") only below 24rem. */
   @media (max-width: 24rem) {
     .more,
     .more-full {
       display: none;
     }
     .more-short {
+      display: inline;
+    }
+  }
+
+  @media (max-width: 36rem) {
+    .quiet .more,
+    .quiet .more-full {
+      display: none;
+    }
+    .quiet .more-short {
       display: inline;
     }
   }

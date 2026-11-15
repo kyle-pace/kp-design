@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.7.1**: On phones (below 36rem) "More labs by Kyle" shortens to "More labs", so it and "About this project" fit on one line on an iPhone.
 - **0.7.0**: LabLayout's top bar is buttons now. It starts with "More labs by Kyle" (was a small "kylepace.dev" link; same `backHref`, new default `backLabel`). A new `lab` prop (`{ name, href }`) puts a "Back to <name>" button on the About page, in place of a lab's own link in the `bar` slot. New `BarButton` component (`info`, `back` or `labs` icon, optional `short` label for narrow phones, `quiet` style). `AboutLink` uses it.
 - **0.6.3**: LabLayout's top bar wraps on narrow phones, so a lab's own links plus the About button never scroll the page sideways.
 - **0.6.2**: The About button is its own component, `AboutLink` (`import { AboutLink } from 'kp-design'`), for pages that don't use LabLayout's top bar. Looks the same.
