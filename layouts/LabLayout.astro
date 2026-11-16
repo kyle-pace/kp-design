@@ -22,6 +22,7 @@ import AboutLink from '../components/AboutLink.astro';
 import BarButton from '../components/BarButton.astro';
 import LabWelcome from '../components/LabWelcome.astro';
 import MoreLabs from '../components/MoreLabs.astro';
+import { DEV_ANALYTICS } from '../lib/kylepace-dev';
 
 interface Props {
   title: string;
@@ -54,6 +55,20 @@ interface Props {
    */
   welcome?: string | { name: string; text: string };
   noindex?: boolean;
+  /**
+   * For a project that has grown out of kylepace.dev onto its own domain (Findish at
+   * findish.now): its name for tab titles and share cards, its own Amplitude project and
+   * live hosts, and its own footer links. Leave it out on kylepace.dev and everything
+   * stays as it was.
+   */
+  site?: {
+    name: string;
+    analytics: { apiKey: string; liveHosts: string[] };
+    footer: { href: string; label: string }[];
+    accessibilityHref: string;
+  };
+  /** Short form of the back label on phones. */
+  backShort?: string;
 }
 
 const {
@@ -71,7 +86,18 @@ const {
   lab,
   welcome,
   noindex = false,
+  site: own,
+  backShort = 'More labs',
 } = Astro.props;
+
+const siteName = own?.name ?? 'kylepace.dev';
+const analytics = own?.analytics ?? DEV_ANALYTICS;
+const footer = own?.footer ?? [
+  { href: 'https://kylepace.dev/privacy/', label: 'Privacy' },
+  { href: 'https://kylepace.dev/accessibility/', label: 'Accessibility' },
+  { href: 'https://kylepace.dev/connections/', label: 'Connections' },
+];
+const accessibilityHref = own?.accessibilityHref ?? 'https://kylepace.dev/accessibility/';
 
 const trim = (p: string) => p.replace(/\/+$/, '');
 const here = trim(Astro.url.pathname);
@@ -89,10 +115,13 @@ const canonical = new URL(Astro.url.pathname, site);
 // A lab's title stands on its own; the site name follows, so tabs still say where it lives.
 // A subpage also names its lab ("Transit agencies · World transit · kylepace.dev"),
 // unless its title already does ("About World transit").
+// On its own domain, a title that already names the site stands alone ("About Findish").
 const pageTitle =
-  lab && !onLabHome && !title.toLowerCase().includes(lab.name.toLowerCase())
-    ? `${title} · ${lab.name} · kylepace.dev`
-    : `${title} · kylepace.dev`;
+  own && title.toLowerCase().includes(siteName.toLowerCase())
+    ? title
+    : lab && !onLabHome && !title.toLowerCase().includes(lab.name.toLowerCase())
+      ? `${title} · ${lab.name} · ${siteName}`
+      : `${title} · ${siteName}`;
 ---
 
 <!doctype html>
@@ -109,7 +138,7 @@ const pageTitle =
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="kylepace.dev" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:image" content={new URL(image, site)} />
     <meta property="og:image:width" content={String(imageWidth)} />
     <meta property="og:image:height" content={String(imageHeight)} />
@@ -127,7 +156,7 @@ const pageTitle =
       <nav class="lab-bar" aria-label="Lab">
         <div class="lab-bar-start">
           {showBack && lab && <BarButton href={lab.href} icon="back" label={`Back to ${lab.name}`} short="Back" back />}
-          <BarButton href={backHref} icon="labs" label={backLabel} short="More labs" quiet shortOnPhones={crowded} />
+          <BarButton href={backHref} icon="labs" label={backLabel} short={backShort} quiet shortOnPhones={crowded} />
         </div>
         <div class="lab-bar-end">
           <slot name="bar" />
@@ -143,13 +172,11 @@ const pageTitle =
       <p>Made by <a href="https://kylepace.net/">Kyle Pace</a>.</p>
       <nav aria-label="Elsewhere">
         <ul>
-          <li><a href="https://kylepace.dev/privacy/">Privacy</a></li>
-          <li><a href="https://kylepace.dev/accessibility/">Accessibility</a></li>
-          <li><a href="https://kylepace.dev/connections/">Connections</a></li>
+          {footer.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
         </ul>
       </nav>
     </footer>
-    <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
+    <DisplaySettings accessibilityHref={accessibilityHref} />
     {
       welcome && !onAbout && (
         <LabWelcome
@@ -159,10 +186,16 @@ const pageTitle =
         />
       )
     }
+    <script is:inline type="application/json" id="kp-analytics" set:html={JSON.stringify(analytics)} />
     <script>
       import { startAnalytics } from '../lib/analytics';
       import { DEV_ANALYTICS } from '../lib/kylepace-dev';
-      startAnalytics(DEV_ANALYTICS);
+      // The page's own project (set by `site`), or kylepace.dev's.
+      let options = DEV_ANALYTICS;
+      try {
+        options = JSON.parse(document.getElementById('kp-analytics')?.textContent || '') ?? DEV_ANALYTICS;
+      } catch {}
+      startAnalytics(options);
 
       // "Back to <lab>" goes back in history when the page before was the lab itself, so
       // a search, a map view or a scroll position comes back as it was. Otherwise (a

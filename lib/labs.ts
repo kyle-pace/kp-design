@@ -6,17 +6,19 @@ export interface LabEntry {
   name: string;
   blurb: string;
   related?: string[];
+  /** Where it lives, if not kylepace.dev/<slug>/ (a lab that moved to its own domain). */
+  href?: string;
 }
 
 export const LABS: LabEntry[] = [
   { slug: 'live-earth', name: 'Live Earth', blurb: 'The whole planet, live, from five weather satellites.', related: ['world-transit'] },
-  { slug: 'recipe-search', name: 'Recipe search', blurb: 'One search box for the recipe sites I trust.', related: ['world-cuisine'] },
+  { slug: 'recipe-search', name: 'Findish', blurb: 'One search box for the recipe sites I trust.', related: ['world-cuisine'], href: 'https://findish.now/' },
   { slug: 'world-transit', name: 'World transit', blurb: 'Every transit route on Earth, on one globe, live.', related: ['live-earth'] },
   { slug: 'world-cuisine', name: 'World cuisine', blurb: 'The world’s cuisines and dishes on one globe.', related: ['recipe-search'] },
   { slug: 'skill-tree', name: 'Career skill tree', blurb: 'My career drawn as an RPG skill tree.' },
 ];
 
-export const labHref = (slug: string) => `https://kylepace.dev/${slug}/`;
+export const labHref = (slug: string) => LABS.find((l) => l.slug === slug)?.href ?? `https://kylepace.dev/${slug}/`;
 
 /** Up to `count` other labs for the lab at `slug`: its related ones first, then newest. */
 export function otherLabs(slug: string, count = 3): LabEntry[] {
