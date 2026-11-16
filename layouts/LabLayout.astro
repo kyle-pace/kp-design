@@ -11,7 +11,8 @@
 // The bar starts with "More labs by Kyle" (back to kylepace.dev/labs/). Pass `about` (the
 // lab's About page) and it ends with a clear "About this project" button on every other
 // page, so a first-time visitor can always find out what they're looking at. Pass `lab`
-// too, and the About page ends with "Back to <lab name>" instead. Pass `welcome` (a few
+// too, and the About page starts with "Back to <lab name>" instead, at the far left
+// where back always is, with "More labs by Kyle" beside it. Pass `welcome` (a few
 // sentences) and a first-time visitor is greeted with them in a dialog, once per lab.
 import '../styles/lab.css';
 import DisplaySettings from '../components/DisplaySettings.astro';
@@ -104,14 +105,16 @@ const pageTitle = `${title} · kylepace.dev`;
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <nav class="lab-bar" aria-label="kylepace.dev">
-      <BarButton href={backHref} icon="labs" label={backLabel} short="More labs" quiet />
+      <div class="lab-bar-start">
+        {
+          onAbout && lab && <BarButton href={lab.href} icon="back" label={`Back to ${lab.name}`} short="Back" />
+        }
+        <BarButton href={backHref} icon="labs" label={backLabel} short="More labs" quiet />
+      </div>
       <div class="lab-bar-end">
         <slot name="bar" />
         {
           about && !onAbout && <AboutLink href={about} />
-        }
-        {
-          onAbout && lab && <BarButton href={lab.href} icon="back" label={`Back to ${lab.name}`} short="Back" />
         }
       </div>
     </nav>
@@ -156,6 +159,15 @@ const pageTitle = `${title} · kylepace.dev`;
     padding: var(--space-3) var(--gutter);
   }
 
+
+  /* On the About page, "Back to <lab>" comes first, where back always is, with
+     "More labs by Kyle" beside it. */
+  .lab-bar-start {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    align-items: center;
+  }
 
   .lab-bar-end {
     display: flex;
