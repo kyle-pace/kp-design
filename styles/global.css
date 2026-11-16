@@ -189,3 +189,9 @@ code { font-family: var(--font-mono); font-size: 0.9em; }
     }
   }
 }
+
+/* The skip link lands on <main id="main" tabindex="-1">, so Safari and VoiceOver move
+   focus too. <main> isn't a control, so it gets no focus ring. */
+main[tabindex='-1']:focus {
+  outline: none;
+}

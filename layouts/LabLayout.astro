@@ -11,8 +11,9 @@
 // The bar starts with "More labs by Kyle" (back to kylepace.dev/labs/). Pass `about` (the
 // lab's About page) and it ends with a clear "About this project" button on every other
 // page, so a first-time visitor can always find out what they're looking at. Pass `lab`
-// too, and the About page starts with "Back to <lab name>" instead, at the far left
-// where back always is, with "More labs by Kyle" beside it. Pass `welcome` (a few
+// too, and every page but the lab's main one starts with "Back to <lab name>", at the
+// far left where back always is, with "More labs by Kyle" beside it. About pages end
+// with a short "More labs" list (components/MoreLabs.astro, lib/labs.ts). Pass `welcome` (a few
 // sentences) and a first-time visitor is greeted with them in a dialog, once per lab.
 import '../styles/lab.css';
 import DisplaySettings from '../components/DisplaySettings.astro';
@@ -20,6 +21,7 @@ import DisplaySettingsInit from '../components/DisplaySettingsInit.astro';
 import AboutLink from '../components/AboutLink.astro';
 import BarButton from '../components/BarButton.astro';
 import LabWelcome from '../components/LabWelcome.astro';
+import MoreLabs from '../components/MoreLabs.astro';
 
 interface Props {
   title: string;
@@ -38,7 +40,11 @@ interface Props {
   backLabel?: string;
   /** The lab's About page ("/transit/about/"). Shows the "About this project" button. */
   about?: string;
-  /** The lab's name and main page. On the About page, shows "Back to <name>". */
+  /**
+   * The lab's name and main page. On every other page of the lab (About, a technical
+   * page, a directory), the bar starts with "Back to <name>", and the tab title says
+   * which lab the page belongs to.
+   */
   lab?: { name: string; href: string };
   /**
    * One to three sentences shown in a welcome dialog on a visitor's first visit: what the
@@ -68,12 +74,25 @@ const {
 } = Astro.props;
 
 const trim = (p: string) => p.replace(/\/+$/, '');
-const onAbout = !!about && trim(Astro.url.pathname) === trim(about);
+const here = trim(Astro.url.pathname);
+const onAbout = !!about && here === trim(about);
+const onLabHome = !!lab && here === trim(new URL(lab.href, 'https://kylepace.dev').pathname);
+const showBack = !!lab && !onLabHome;
+const showAbout = !!about && !onAbout;
+// Three buttons don't fit a phone's width at full length, so "More labs by Kyle" also
+// shortens then. With two, it keeps "by Kyle": the only credit in view on a phone.
+const crowded = showBack && showAbout;
+const labSlug = lab ? trim(new URL(lab.href, 'https://kylepace.dev').pathname).split('/').pop() : undefined;
 
 const site = Astro.site ?? new URL('https://kylepace.dev');
 const canonical = new URL(Astro.url.pathname, site);
 // A lab's title stands on its own; the site name follows, so tabs still say where it lives.
-const pageTitle = `${title} · kylepace.dev`;
+// A subpage also names its lab ("Transit agencies · World transit · kylepace.dev"),
+// unless its title already does ("About World transit").
+const pageTitle =
+  lab && !onLabHome && !title.toLowerCase().includes(lab.name.toLowerCase())
+    ? `${title} · ${lab.name} · kylepace.dev`
+    : `${title} · kylepace.dev`;
 ---
 
 <!doctype html>
@@ -104,30 +123,31 @@ const pageTitle = `${title} · kylepace.dev`;
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <nav class="lab-bar" aria-label="kylepace.dev">
-      <div class="lab-bar-start">
-        {
-          onAbout && lab && <BarButton href={lab.href} icon="back" label={`Back to ${lab.name}`} short="Back" />
-        }
-        <BarButton href={backHref} icon="labs" label={backLabel} short="More labs" quiet />
-      </div>
-      <div class="lab-bar-end">
-        <slot name="bar" />
-        {
-          about && !onAbout && <AboutLink href={about} />
-        }
-      </div>
-    </nav>
-    <main id="main">
+    <header class="lab-head">
+      <nav class="lab-bar" aria-label="Lab">
+        <div class="lab-bar-start">
+          {showBack && lab && <BarButton href={lab.href} icon="back" label={`Back to ${lab.name}`} short="Back" back />}
+          <BarButton href={backHref} icon="labs" label={backLabel} short="More labs" quiet shortOnPhones={crowded} />
+        </div>
+        <div class="lab-bar-end">
+          <slot name="bar" />
+          {showAbout && <AboutLink href={about!} />}
+        </div>
+      </nav>
+    </header>
+    <main id="main" tabindex="-1">
       <slot />
+      {onAbout && labSlug && <MoreLabs slug={labSlug} />}
     </main>
     <footer class="lab-foot">
       <p>Made by <a href="https://kylepace.net/">Kyle Pace</a>.</p>
-      <ul>
-        <li><a href="https://kylepace.dev/privacy/">Privacy</a></li>
-        <li><a href="https://kylepace.dev/accessibility/">Accessibility</a></li>
-        <li><a href="https://kylepace.dev/connections/">What this connects to</a></li>
-      </ul>
+      <nav aria-label="Elsewhere">
+        <ul>
+          <li><a href="https://kylepace.dev/privacy/">Privacy</a></li>
+          <li><a href="https://kylepace.dev/accessibility/">Accessibility</a></li>
+          <li><a href="https://kylepace.dev/connections/">Connections</a></li>
+        </ul>
+      </nav>
     </footer>
     <DisplaySettings accessibilityHref="https://kylepace.dev/accessibility/" />
     {
@@ -143,6 +163,26 @@ const pageTitle = `${title} · kylepace.dev`;
       import { startAnalytics } from '../lib/analytics';
       import { DEV_ANALYTICS } from '../lib/kylepace-dev';
       startAnalytics(DEV_ANALYTICS);
+
+      // "Back to <lab>" goes back in history when the page before was the lab itself, so
+      // a search, a map view or a scroll position comes back as it was. Otherwise (a
+      // shared link, a new tab) it's a plain link to the lab.
+      for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-back]')) {
+        link.addEventListener('click', (event) => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+          try {
+            const before = new URL(document.referrer);
+            const target = new URL(link.href);
+            const trimmed = (p: string) => p.replace(/\/+$/, '');
+            if (before.origin === location.origin && trimmed(before.pathname) === trimmed(target.pathname) && history.length > 1) {
+              event.preventDefault();
+              history.back();
+            }
+          } catch {
+            // No referrer: follow the link.
+          }
+        });
+      }
     </script>
   </body>
 </html>
@@ -176,6 +216,12 @@ const pageTitle = `${title} · kylepace.dev`;
     gap: var(--space-1) var(--space-3);
     align-items: center;
     margin-inline-start: auto;
+  }
+
+  /* The skip link lands on <main> (tabindex -1, so Safari moves focus too); it isn't a
+     control, so no focus ring. */
+  main:focus {
+    outline: none;
   }
 
   .lab-foot {

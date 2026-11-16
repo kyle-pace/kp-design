@@ -1,0 +1,73 @@
+---
+// "More labs": two or three sibling labs at the end of a lab's About page, where curious
+// readers finish. Related labs come first (lib/labs.ts), then the newest. LabLayout adds
+// it to About pages; pages with their own layout can place it themselves.
+import { otherLabs, labHref } from '../lib/labs';
+interface Props {
+  /** This lab's slug ("world-transit"), so it isn't listed. */
+  slug: string;
+}
+const { slug } = Astro.props;
+const labs = otherLabs(slug);
+---
+
+<section class="more-labs" aria-labelledby="more-labs-title">
+  <h2 id="more-labs-title">More labs</h2>
+  <ul>
+    {
+      labs.map((lab) => (
+        <li>
+          <a href={labHref(lab.slug)}>{lab.name}</a>
+          <p>{lab.blurb}</p>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="all"><a href="https://kylepace.dev/labs/">Every lab, newest first</a></p>
+</section>
+
+<style>
+  /* Lined up with the footer at the page's left gutter, whatever width the About page uses. */
+  .more-labs {
+    max-width: 64rem;
+    margin: var(--space-12) var(--gutter) 0;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+
+  .more-labs h2 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--step-1);
+  }
+
+  .more-labs ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-4) var(--space-8);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .more-labs li a {
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration-color: var(--accent-ink, var(--accent));
+    text-underline-offset: 0.2em;
+  }
+
+  .more-labs li p {
+    margin: var(--space-1) 0 0;
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+  }
+
+  .more-labs .all {
+    margin: var(--space-6) 0 0;
+    font-size: var(--step--1);
+  }
+
+  .more-labs .all a {
+    color: var(--ink-muted);
+  }
+</style>

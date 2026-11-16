@@ -238,6 +238,17 @@ const settings = [
     cursor: pointer;
   }
 
+  /* On phones it sits a little tighter in the corner and a little smaller (still a 44px
+     target), so it covers less of what scrolls under it. */
+  @media (max-width: 36rem) {
+    .display-toggle {
+      right: var(--space-3);
+      bottom: var(--space-3);
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+  }
+
   /* Tucked below the edge while the page scrolls down (see the script above). */
   .display-toggle.tucked:not(:focus-visible) {
     translate: 0 calc(100% + var(--space-4) + 0.5rem);

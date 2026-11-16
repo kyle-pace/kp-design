@@ -22,7 +22,7 @@ interface Props {
    * The site switch. `label` is what shows (".net"), `name` is what screen readers hear
    * ("kylepace.net"). Mark the site you're on with `current`.
    */
-  sites?: { href: string; label: string; name: string; current?: boolean }[];
+  sites?: { href: string; label: string; name: string; about?: string; current?: boolean }[];
 }
 
 const { name, suffix, mono = false, href = '/', links, sites = [] } = Astro.props;
@@ -50,8 +50,14 @@ const isCurrent = (link: string) => {
                   <span aria-hidden="true">{site.label}</span>
                   <span class="visually-hidden">
                     {site.name}
+                    {site.about && `: ${site.about}`}
                     {site.current && ', current site'}
                   </span>
+                  {site.about && !site.current && (
+                    <span class="tip" aria-hidden="true">
+                      {site.name}: {site.about}
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
@@ -145,6 +151,42 @@ const isCurrent = (link: string) => {
 
   .sites a:hover {
     color: var(--ink);
+  }
+
+  /* The other site's tooltip: what's over there, on hover or keyboard focus. Touch has
+     neither, and a tap just goes, which is the point of the switch. */
+  .sites .tip {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 50%;
+    z-index: 10;
+    translate: -50% 0;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sites a:hover .tip,
+  .sites a:focus-visible .tip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sites .tip {
+      transition:
+        opacity var(--duration-fast, 150ms) ease-out,
+        visibility var(--duration-fast, 150ms) ease-out;
+    }
   }
 
   .sites a[aria-current='true'] {

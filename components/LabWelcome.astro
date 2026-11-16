@@ -11,7 +11,7 @@ interface Props {
   name: string;
   /** One to three plain sentences: what it is and what to try first. */
   text: string;
-  /** The lab's About page, for a "How it works" link. */
+  /** The lab's About page, for an "About this project" link (the same words as the bar). */
   about?: string;
   /** What to remember the visit by; defaults to the lab's name. */
   storageKey?: string;
@@ -30,7 +30,7 @@ const { name, text, about, storageKey = name } = Astro.props;
     </p>
     <div class="lab-welcome-actions">
       <button type="submit" value="explore" autofocus>Start exploring</button>
-      {about && <a href={about}>How it works</a>}
+      {about && <a href={about}>About this project</a>}
     </div>
   </form>
 </dialog>
@@ -56,6 +56,16 @@ const { name, text, about, storageKey = name } = Astro.props;
       }
     };
     dialog.addEventListener('close', remember);
+    // Closing returns focus to where it was before the dialog opened, which on a fresh page
+    // is nowhere, so the next Tab would leave the page. Put it on the page's title instead:
+    // a keyboard or screen reader user starts at the top of the lab. (Not a text field: on
+    // a phone that would pop the keyboard up.)
+    dialog.addEventListener('close', () => {
+      const target = document.querySelector<HTMLElement>('[data-welcome-focus]') ?? document.querySelector<HTMLElement>('main h1');
+      if (!target) return;
+      if (!target.hasAttribute('tabindex') && !target.matches('a, button, input, select, textarea')) target.setAttribute('tabindex', '-1');
+      requestAnimationFrame(() => target.focus({ preventScroll: true }));
+    });
     // A click on the dimmed page around the dialog closes it too.
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
