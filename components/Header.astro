@@ -154,39 +154,34 @@ const isCurrent = (link: string) => {
   }
 
   /* The other site's tooltip: what's over there, on hover or keyboard focus. Touch has
-     neither, and a tap just goes, which is the point of the switch. */
+     neither, and a tap just goes, which is the point of the switch. It's out of the
+     layout (display: none) until shown, so it can't widen a narrow page. */
   .sites .tip {
+    display: none;
     position: absolute;
     top: calc(100% + var(--space-2));
-    left: 50%;
+    left: 0;
     z-index: 10;
-    translate: -50% 0;
     padding: var(--space-1) var(--space-3);
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--bg);
     color: var(--ink);
-    font-family: var(--font-body);
+    font-family: var(--font-text);
     font-size: var(--step--1);
     white-space: nowrap;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
-    opacity: 0;
-    visibility: hidden;
     pointer-events: none;
   }
 
-  .sites a:hover .tip,
-  .sites a:focus-visible .tip {
-    opacity: 1;
-    visibility: visible;
+  @media (hover: hover) {
+    .sites a:hover .tip {
+      display: block;
+    }
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .sites .tip {
-      transition:
-        opacity var(--duration-fast, 150ms) ease-out,
-        visibility var(--duration-fast, 150ms) ease-out;
-    }
+  .sites a:focus-visible .tip {
+    display: block;
   }
 
   .sites a[aria-current='true'] {

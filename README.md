@@ -98,6 +98,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 - **0.7.2**: The floating display settings button tucks away while the page scrolls down and comes back on scrolling up, near the top, at the bottom, on keyboard focus or with its panel open, so it never sits on content.
 - **0.7.1**: On phones (below 36rem) "More labs by Kyle" shortens to "More labs", so it and "About this project" fit on one line on an iPhone.
+- **0.9.3**: The site switch's tooltip stays out of the layout until shown (it widened 320px pages by 28px).
 - **0.9.2**: The kylepace.dev header says "Resume (PDF)" out loud and on screen (was "(PDF)" for screen readers only).
 - **0.9.1**: `MoreLabs` takes `--more-labs-inset` (default the gutter) for labs whose `<main>` is already inset.
 - **0.9.0**: Navigation fixes from a usability study (November 15, 2026).
