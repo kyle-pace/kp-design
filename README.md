@@ -96,6 +96,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 ## Changelog
 
+- **0.10.1**: LabLayout takes `bar={false}` to leave out the top bar of buttons, for a standalone project (Findish) that links from its footer instead.
 - **0.10.0**: LabLayout takes an optional `site` (name, Amplitude project, footer links, accessibility page) and `backShort`, for a project that has moved from kylepace.dev to its own domain. Without them nothing changes. Recipe search is now Findish at findish.now, and `lib/labs.ts` entries can carry their own `href`.
 - **0.7.2**: The floating display settings button tucks away while the page scrolls down and comes back on scrolling up, near the top, at the bottom, on keyboard focus or with its panel open, so it never sits on content.
 - **0.7.1**: On phones (below 36rem) "More labs by Kyle" shortens to "More labs", so it and "About this project" fit on one line on an iPhone.

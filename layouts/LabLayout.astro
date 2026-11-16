@@ -69,6 +69,11 @@ interface Props {
   };
   /** Short form of the back label on phones. */
   backShort?: string;
+  /**
+   * Show the top bar of buttons (back, More labs, About this project). A standalone
+   * project on its own domain can turn it off and link from its footer instead.
+   */
+  bar?: boolean;
 }
 
 const {
@@ -88,6 +93,7 @@ const {
   noindex = false,
   site: own,
   backShort = 'More labs',
+  bar = true,
 } = Astro.props;
 
 const siteName = own?.name ?? 'kylepace.dev';
@@ -152,6 +158,7 @@ const pageTitle =
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    {bar && (
     <header class="lab-head">
       <nav class="lab-bar" aria-label="Lab">
         <div class="lab-bar-start">
@@ -164,6 +171,7 @@ const pageTitle =
         </div>
       </nav>
     </header>
+    )}
     <main id="main" tabindex="-1">
       <slot />
       {onAbout && labSlug && <MoreLabs slug={labSlug} />}
