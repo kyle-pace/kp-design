@@ -27,10 +27,11 @@ const labs = otherLabs(slug);
 </section>
 
 <style>
-  /* Lined up with the footer at the page's left gutter, whatever width the About page uses. */
+  /* Lined up with the footer at the page's left gutter, whatever width the About page uses.
+     A lab whose <main> is already inset (World cuisine) sets --more-labs-inset: 0. */
   .more-labs {
     max-width: 64rem;
-    margin: var(--space-12) var(--gutter) 0;
+    margin: var(--space-12) var(--more-labs-inset, var(--gutter)) 0;
     padding-top: var(--space-6);
     border-top: 1px solid var(--line);
   }
