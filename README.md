@@ -98,6 +98,7 @@ Display settings are saved per domain, so a choice made on kylepace.net doesn't 
 
 - **0.7.2**: The floating display settings button tucks away while the page scrolls down and comes back on scrolling up, near the top, at the bottom, on keyboard focus or with its panel open, so it never sits on content.
 - **0.7.1**: On phones (below 36rem) "More labs by Kyle" shortens to "More labs", so it and "About this project" fit on one line on an iPhone.
+- **0.9.2**: The kylepace.dev header says "Resume (PDF)" out loud and on screen (was "(PDF)" for screen readers only).
 - **0.9.1**: `MoreLabs` takes `--more-labs-inset` (default the gutter) for labs whose `<main>` is already inset.
 - **0.9.0**: Navigation fixes from a usability study (November 15, 2026).
   - LabLayout: "Back to <lab>" now shows on every page of a lab except its main one (About, technical pages, directories), and goes back in history when the lab was the page before, so a search or map view comes back. Subpage titles name their lab ("Transit agencies · World transit · kylepace.dev"). About pages end with a "More labs" list (`MoreLabs`, data in `lib/labs.ts`; add each new lab there). The bar is a `<header>`, its nav is named "Lab", the footer links are a nav named "Elsewhere", and "What this connects to" is "Connections", as on the hub. `<main>` takes focus from the skip link (tabindex -1), here and in DevLayout.

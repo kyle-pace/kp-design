@@ -12,7 +12,8 @@ export const DEV_NAV = [
   { href: 'https://kylepace.dev/apps/', label: 'Apps' },
   { href: 'https://kylepace.dev/how-i-build/', label: 'How I build' },
   // Same short address kylepace.net shares; it forwards to the PDF on GitHub Pages.
-  { href: 'https://kylepace.net/resume/', label: 'Resume', emphasis: true, hint: ' (PDF)' },
+  // "(PDF)" shows, so nobody is surprised by a download (usability study, Nov 15, 2026).
+  { href: 'https://kylepace.net/resume/', label: 'Resume (PDF)', emphasis: true },
 ];
 
 export const DEV_FOOTER = [
