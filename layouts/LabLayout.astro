@@ -63,7 +63,7 @@ interface Props {
    */
   site?: {
     name: string;
-    analytics: { apiKey: string; liveHosts: string[] };
+    analytics: { apiKey: string; liveHosts: string[]; replayRate?: number };
     footer: { href: string; label: string }[];
     accessibilityHref: string;
   };

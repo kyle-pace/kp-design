@@ -3,13 +3,19 @@
 // Privacy Control, Do Not Track or the site's opt-out, and only on the live domain.
 // Automated browsers and crawlers send nothing, and Kyle's own browsers are tagged
 // `internal_user: true` (open any page with ?internal=on once) so charts can leave them out.
-// Session Replay records a small share of sessions with everything masked, and its code
-// only loads for those sessions.
+// Page addresses are recorded without their query string or fragment, so a search someone
+// typed ("/?q=…") never leaves the browser (lib/analytics-urls.ts).
+// Session Replay records a small share of sessions with all text and inputs masked and
+// addresses cleaned the same way, and its code only loads for those sessions.
 //
 // Each site calls startAnalytics() with its own project's browser key and live hosts.
-// This is the only code that talks to Amplitude, so switching tools means changing it.
+// This file is small on purpose: it decides whether analytics runs, and only then, once
+// the page is idle, loads Amplitude's code (lib/analytics-sdk.ts) as a separate file. So
+// the SDK never counts against a page's JavaScript budget or delays its first paint.
+// These two files are the only code that talks to Amplitude, so switching tools means
+// changing them.
 
-import * as amplitude from '@amplitude/analytics-browser';
+type Sdk = typeof import('./analytics-sdk');
 
 export interface AnalyticsOptions {
   /** The Amplitude project's browser API key. Public by design (every page sends it). */
@@ -68,7 +74,12 @@ export function setOptOut(optOut: boolean) {
   } catch {
     // Storage can be unavailable (private modes); nothing to remember then.
   }
-  amplitude.setOptOut(optOut);
+  if (optOut) {
+    // Nothing waiting is sent, and Amplitude's code is not loaded if it hasn't been yet.
+    waiting.length = 0;
+    if (state !== 'on') state = 'off';
+  }
+  sdk?.setOptOut(optOut);
 }
 
 function browserSaysNo(): boolean {
@@ -90,27 +101,80 @@ function inReplaySample(rate: number): boolean {
   }
 }
 
-export async function startAnalytics({ apiKey, liveHosts, replayRate = 0.05 }: AnalyticsOptions) {
+// 'idle': startAnalytics hasn't run yet. 'waiting': it will load when the page is idle.
+// 'loading': Amplitude's code is on its way. 'on': events go straight to it. 'off':
+// nothing is sent on this page.
+let state: 'idle' | 'waiting' | 'loading' | 'on' | 'off' = 'idle';
+let sdk: Sdk | null = null;
+let load: (() => Promise<void>) | null = null;
+let loaded: Promise<void> | null = null;
+// Custom events tracked before Amplitude's code has loaded, with the time they happened.
+const waiting: { event: string; properties?: Record<string, unknown>; time: number }[] = [];
+const MAX_WAITING = 50;
+
+function whenIdle(run: () => void) {
+  const idle = () => {
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 3000 });
+    else setTimeout(run, 300);
+  };
+  if (document.readyState === 'complete') idle();
+  else addEventListener('load', idle, { once: true });
+}
+
+function loadNow(): Promise<void> {
+  if (loaded) return loaded;
+  if (!load || state !== 'waiting') return Promise.resolve();
+  state = 'loading';
+  loaded = load().catch(() => {
+    // Offline, or a blocker stopped the file: no analytics on this page.
+    state = 'off';
+    waiting.length = 0;
+  });
+  return loaded;
+}
+
+/**
+ * Decides whether analytics runs here and, if it does, loads Amplitude once the page is
+ * idle (or at the first custom event, whichever comes first). The promise settles when
+ * analytics is running or has been ruled out.
+ */
+export function startAnalytics({ apiKey, liveHosts, replayRate = 0.05 }: AnalyticsOptions): Promise<void> {
+  if (state !== 'idle') return loaded ?? Promise.resolve();
   // Runs first everywhere, so ?internal=on is remembered and tidied away even where nothing is sent.
   const internal = isInternalBrowser();
-  if (!apiKey) return;
-  if (!liveHosts.includes(location.hostname)) return;
-  if (browserSaysNo() || isOptedOut() || isAutomated()) return;
-
-  if (inReplaySample(replayRate)) {
-    const { sessionReplayPlugin } = await import('@amplitude/plugin-session-replay-browser');
-    amplitude.add(sessionReplayPlugin({ sampleRate: 1, privacyConfig: { defaultMaskLevel: 'conservative' } }));
+  if (!apiKey || !liveHosts.includes(location.hostname) || browserSaysNo() || isOptedOut() || isAutomated()) {
+    state = 'off';
+    waiting.length = 0;
+    return Promise.resolve();
   }
-
-  amplitude.init(apiKey, {
-    autocapture: true,
-    identityStorage: 'localStorage',
-    trackingOptions: { ipAddress: false },
+  state = 'waiting';
+  load = async () => {
+    const module = await import('./analytics-sdk');
+    // The opt-out may have been switched on while the page sat idle.
+    if (state === 'off' || isOptedOut()) {
+      state = 'off';
+      return;
+    }
+    await module.start(apiKey, { internal, replay: inReplaySample(replayRate) });
+    sdk = module;
+    state = 'on';
+    for (const { event, properties, time } of waiting.splice(0)) module.track(event, properties, time);
+  };
+  return new Promise((resolve) => {
+    whenIdle(() => void loadNow().then(resolve));
+    if (waiting.length) void loadNow().then(resolve);
   });
-  amplitude.identify(new amplitude.Identify().set('internal_user', internal));
 }
 
 /** Custom events, in Title Case, past-tense verb first ("Clicked Resume"). */
 export function track(event: string, properties?: Record<string, unknown>) {
-  amplitude.track(event, properties);
+  if (state === 'off') return;
+  if (sdk && state === 'on') {
+    sdk.track(event, properties);
+    return;
+  }
+  // Held until Amplitude's code arrives. Someone is using the page, so fetch it now
+  // instead of waiting for an idle moment.
+  if (waiting.length < MAX_WAITING) waiting.push({ event, properties, time: Date.now() });
+  void loadNow();
 }
