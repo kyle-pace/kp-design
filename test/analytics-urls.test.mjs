@@ -84,7 +84,48 @@ test('scrubEvent cleans a failed request and any value that is an address', () =
   assert.equal(event.event_properties['[Amplitude] URL Query'], 'utm_campaign=fall');
   assert.equal(event.event_properties['[Amplitude] URL Fragment'], '');
   assert.equal(event.event_properties.note, 'is this ok? yes #1');
-  assert.deepEqual(event.event_properties['[Amplitude] Element Hierarchy'][0].attrs, { href: '/', title: 'why? #1' });
+  // The link's address is cleaned; its title goes (see the next test).
+  assert.deepEqual(event.event_properties['[Amplitude] Element Hierarchy'][0].attrs, { href: '/' });
+});
+
+test('scrubEvent takes typed words out of a click: labels, titles and data-* of the element and everything around it', () => {
+  const event = scrubEvent({
+    event_type: '[Amplitude] Element Clicked',
+    event_properties: {
+      '[Amplitude] Element Aria Label': 'Remove no onions',
+      '[Amplitude] Element Text': '*****',
+      '[Amplitude] Element Tag': 'button',
+      '[Amplitude] Element ID': 'remove',
+      '[Amplitude] Element Class': 'tag tag-word',
+      '[Amplitude] Element Attributes': { place: 'box' },
+      '[Amplitude] Element Hierarchy': [
+        {
+          tag: 'button',
+          index: 2,
+          id: 'remove',
+          classes: ['tag', 'tag-word'],
+          attrs: { type: 'button', 'aria-label': 'Remove no onions', 'data-remove-tag': 'word:onions', title: 'onions', 'data-amp-track-place': 'box', 'aria-pressed': 'true', 'aria-description': 'onions again' },
+        },
+        { tag: 'li', attrs: { 'data-q': 'onions and fish', role: 'listitem' } },
+        { tag: 'ul', id: 'with-chips', attrs: { 'aria-label': 'Added to your search' } },
+      ],
+    },
+  });
+  assert.ok(!JSON.stringify(event).includes('onions'), JSON.stringify(event));
+  const p = event.event_properties;
+  assert.ok(!('[Amplitude] Element Aria Label' in p));
+  const [button, li, ul] = p['[Amplitude] Element Hierarchy'];
+  // What tells one element from another stays: tag, id, classes, place, and attributes that say what it is.
+  assert.deepEqual(button, { tag: 'button', index: 2, id: 'remove', classes: ['tag', 'tag-word'], attrs: { type: 'button', 'data-amp-track-place': 'box', 'aria-pressed': 'true' } });
+  assert.deepEqual(li.attrs, { role: 'listitem' });
+  assert.deepEqual(ul, { tag: 'ul', id: 'with-chips', attrs: {} });
+  assert.equal(p['[Amplitude] Element Tag'], 'button');
+  assert.deepEqual(p['[Amplitude] Element Attributes'], { place: 'box' });
+});
+
+test("scrubEvent leaves a site's own event properties alone, whatever they are called", () => {
+  const event = scrubEvent({ event_type: 'Picked Store', event_properties: { title: 'Ballard', 'aria-label': 'x', attrs: { title: 'kept', 'data-x': 'kept' } } });
+  assert.deepEqual(event.event_properties, { title: 'Ballard', 'aria-label': 'x', attrs: { title: 'kept', 'data-x': 'kept' } });
 });
 
 test('scrubEvent leaves an event with no properties alone', () => {
@@ -116,6 +157,33 @@ test('cleanReplayBody cleans the page address and link hrefs in a replay upload'
   assert.deepEqual(events[2].data.node.childNodes[0].attributes, { href: '/', class: 'row' });
   // A photo's address is not something typed, and the replay needs it to show the photo.
   assert.equal(events[2].data.node.childNodes[1].attributes.src, 'https://img.example/a.jpg?w=300');
+});
+
+test('cleanReplayBody takes labels, titles and data-* out of the recorded page and its later changes', () => {
+  const snapshot = {
+    type: 2,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'button',
+            attributes: { class: 'tag', type: 'button', 'aria-label': 'Remove no onions', 'data-remove-tag': 'word:onions', title: 'onions', 'aria-expanded': 'false' },
+            childNodes: [{ type: 3, textContent: '*****' }],
+          },
+        ],
+      },
+    },
+  };
+  const changed = { type: 3, data: { source: 0, attributes: [{ id: 12, attributes: { 'aria-label': 'Remove no onions', 'data-q': 'onions', hidden: null, href: '/?q=onions' } }], adds: [{ parentId: 3, node: { type: 2, tagName: 'li', attributes: { 'data-kept': 'onions and fish', class: 'recent' } } }] } };
+  const clean = cleanReplayBody(JSON.stringify({ version: 1, events: [snapshot, changed].map((event) => JSON.stringify(event)) }));
+  assert.ok(!clean.includes('onions'), clean);
+  const events = JSON.parse(clean).events.map((event) => JSON.parse(event));
+  assert.deepEqual(events[0].data.node.childNodes[0].attributes, { class: 'tag', type: 'button', 'aria-expanded': 'false' });
+  assert.deepEqual(events[0].data.node.childNodes[0].childNodes, [{ type: 3, textContent: '*****' }]);
+  assert.deepEqual(events[1].data.attributes, [{ id: 12, attributes: { hidden: null, href: '/' } }]);
+  assert.deepEqual(events[1].data.adds[0].node.attributes, { class: 'recent' });
 });
 
 test('cleanReplayBody leaves out what it cannot read', () => {

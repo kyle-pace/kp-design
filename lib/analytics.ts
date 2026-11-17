@@ -5,6 +5,8 @@
 // `internal_user: true` (open any page with ?internal=on once) so charts can leave them out.
 // Page addresses are recorded without their query string or fragment, so a search someone
 // typed ("/?q=…") never leaves the browser (lib/analytics-urls.ts).
+// Clicks are recorded without the labels, titles and data-* values of the elements around
+// them, which is where a page writes what was typed ("Remove no cilantro").
 // Session Replay records a small share of sessions with all text and inputs masked and
 // addresses cleaned the same way, and its code only loads for those sessions.
 //

@@ -46,9 +46,14 @@ assert.ok(chunks.length > 0, 'the SDK should be in its own file');
 const HTML = `<!doctype html><title>Test page</title>
 <a id="link" href="/?q=linked+walnuts">A link</a>
 <input id="box" value="typed radish"><p>Visible words</p>
+<ul id="tags" aria-label="Searching for turnip" data-kept="fennel soup" data-amp-mask>
+  <li title="sorrel"><button id="tag" type="button" class="tag" aria-label="Remove no turnip" data-remove-tag="word:fennel" title="sorrel" data-amp-track-place="box">no turnip</button></li>
+</ul>
 <script type="module" src="/page.js"></script>`;
 // Words that stand in for something a person typed. None may reach Amplitude.
-const TYPED = ['onions', 'anchovy', 'walnuts', 'capers', 'saffron', 'fragment', 'radish', 'Visible words'];
+// (turnip, fennel, sorrel and chervil sit in a button's label, title and data-* values, the
+// way a search page's "Remove no turnip" tag holds what was typed.)
+const TYPED = ['onions', 'anchovy', 'walnuts', 'capers', 'saffron', 'fragment', 'radish', 'Visible words', 'turnip', 'fennel', 'sorrel', 'chervil'];
 
 const browser = await chromium.launch({ args: ['--disable-blink-features=AutomationControlled'] });
 
@@ -104,6 +109,8 @@ try {
         document.getElementById('link').addEventListener('click', (event) => event.preventDefault());
       });
       await page.click('#link');
+      // A tag whose label and data-* hold typed words, inside a list that holds more.
+      await page.click('#tag');
       await page.evaluate(() => window.kpTrack('Searched Recipes', { results: 3, from: 'https://kp.test/?q=saffron' }));
       await page.evaluate(() => history.pushState({}, '', '/about/?q=saffron+rice#fragment'));
     },
@@ -125,6 +132,17 @@ try {
   const click = run.events.find((event) => event.event_type === '[Amplitude] Element Clicked');
   assert.equal(click.event_properties['[Amplitude] Element Href'], 'https://kp.test/');
   assert.equal(click.event_properties['[Amplitude] Page URL'], 'https://kp.test/');
+  // The click on the tag is still recorded and still says which element it was, without
+  // its label, its title or its data-* values (or those of the elements around it).
+  const tagClick = run.events.find((event) => event.event_type === '[Amplitude] Element Clicked' && event.event_properties['[Amplitude] Element ID'] === 'tag');
+  assert.ok(tagClick, 'the click on the tag was not recorded');
+  assert.ok(!('[Amplitude] Element Aria Label' in tagClick.event_properties));
+  const [tagNode, , listNode] = tagClick.event_properties['[Amplitude] Element Hierarchy'];
+  assert.equal(tagNode.tag, 'button');
+  assert.deepEqual(tagNode.attrs, { type: 'button', 'data-amp-track-place': 'box' });
+  assert.equal(listNode.id, 'tags');
+  assert.ok(!listNode.attrs || !Object.keys(listNode.attrs).some((name) => /^(aria-label|title|data-kept)$/.test(name)));
+  assert.deepEqual(tagClick.event_properties['[Amplitude] Element Attributes'], { place: 'box' });
 
   // Events tracked before the SDK loaded arrive, with the time they happened.
   const early = run.events.find((event) => event.event_type === 'Opened Test Page');
@@ -135,7 +153,7 @@ try {
   assert.equal(searched.event_properties.from, 'https://kp.test/');
   const identify = run.events.find((event) => event.event_type === '$identify' && event.user_properties?.$set?.internal_user !== undefined);
   assert.equal(identify.user_properties.$set.internal_user, false);
-  console.log(`ok  search page: ${run.events.length} events sent (${[...new Set(types)].join(', ')}), none with typed words`);
+  console.log(`ok  search page: ${run.events.length} events sent (${[...new Set(types)].join(', ')}), none with typed words, labels or data-* values`);
 
   // 2. The SDK is fetched after the page has loaded, not with it.
   const order = run.requested.filter((p) => p.endsWith('.js'));
@@ -153,6 +171,14 @@ try {
       await page.waitForTimeout(1000);
       await page.evaluate(() => history.pushState({}, '', '/?q=capers+and+lemon'));
       await page.fill('#box', 'saffron rice');
+      // A label and a data-* value written after the page was recorded, then a click on it.
+      await page.evaluate(() => {
+        const tag = document.getElementById('tag');
+        tag.setAttribute('aria-label', 'Remove no chervil');
+        tag.setAttribute('data-remove-tag', 'word:chervil');
+        tag.setAttribute('aria-pressed', 'true');
+      });
+      await page.click('#tag');
       await page.waitForTimeout(4000);
     },
   });
@@ -161,7 +187,9 @@ try {
   assert.ok(recordings.some(({ body }) => body.includes('https://kp.test/')), 'the recording should still have the clean address');
   const recorded = JSON.stringify(replay.sent);
   for (const word of TYPED) assert.ok(!recorded.includes(word), `"${word}" reached Session Replay: ${recorded.slice(Math.max(0, recorded.indexOf(word) - 200), recorded.indexOf(word) + 80)}`);
-  console.log(`ok  Session Replay: ${recordings.length} upload(s), none with typed words or page text`);
+  // The recording still has the tag and the change to it; only the words are gone.
+  assert.ok(recorded.includes('aria-pressed'), 'the change to the tag should still be in the recording');
+  console.log(`ok  Session Replay: ${recordings.length} upload(s), none with typed words, labels, data-* values or page text`);
 
   // 4. Not a live host, opted out, Global Privacy Control: the SDK is never fetched.
   const quiet = [

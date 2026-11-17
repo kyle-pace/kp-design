@@ -5,6 +5,14 @@
 // its host and path. Campaign tags (utm_source and friends) stay, because they come from
 // the link someone followed, not from anything they typed.
 //
+// A page also writes what was typed into attributes: a "Remove no cilantro" label on a
+// tag's button, a data-* value its script reads back. Amplitude copies the attributes of a
+// clicked element and of everything around it ("[Amplitude] Element Hierarchy"), and the
+// clicked element's label on its own ("[Amplitude] Element Aria Label"); its text masking
+// (data-amp-mask) covers an element's text, not its attributes. So the labels, titles and
+// data-* values are taken out here, for every site, and out of Session Replay's recording
+// of the page. An element is still told apart by its tag, id, classes and place.
+//
 // No imports, so `node --test` can run this file as it is.
 
 /** "https://x.test/a?q=typed&utm_source=news#part" becomes "https://x.test/a?utm_source=news". */
@@ -32,6 +40,11 @@ const QUERY_KEY = /^\[Amplitude\] .*(url query|url fragment)$/i;
 // element's attributes), the attributes that hold an address.
 const URL_ATTRIBUTE = /^(href|src|action|formaction|url)$/i;
 const LOOKS_LIKE_URL = /^(https?:)?\/\//i;
+// Attributes that can hold words a person typed. In Amplitude's own properties these are
+// dropped. data-amp-track-* stays: a site sets those on purpose, for analytics to read.
+const TYPED_ATTRIBUTE = /^(aria-(label|description|valuetext|placeholder|roledescription)|title|data-(?!amp-track-).*)$/i;
+// Amplitude's own properties that are a copy of one of those attributes.
+const LABEL_KEY = /^\[Amplitude\] Element Aria Label$/i;
 
 // `own` is true inside a property Amplitude itself filled in.
 function scrubValue(key: string, value: unknown, depth: number, own: boolean): unknown {
@@ -42,13 +55,15 @@ function scrubValue(key: string, value: unknown, depth: number, own: boolean): u
   }
   if (depth >= 6) return value;
   if (Array.isArray(value)) return value.map((item) => scrubValue(key, item, depth + 1, own));
-  if (value && typeof value === 'object') return scrubProperties(value as Record<string, unknown>, depth + 1, own);
+  if (value && typeof value === 'object') return scrubProperties(value as Record<string, unknown>, depth + 1, own, own && key === 'attrs');
   return value;
 }
 
-function scrubProperties(properties: Record<string, unknown>, depth = 0, own = false): Record<string, unknown> {
+// `attrs` is true for the attributes of one element in "[Amplitude] Element Hierarchy".
+function scrubProperties(properties: Record<string, unknown>, depth = 0, own = false, attrs = false): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(properties)) {
+    if (LABEL_KEY.test(key) || (attrs && TYPED_ATTRIBUTE.test(key))) continue;
     out[key] = scrubValue(key, value, depth, own || key.startsWith('[Amplitude]'));
   }
   return out;
@@ -75,6 +90,17 @@ function scrubReplayNode(value: unknown, depth: number): unknown {
   if (!value || typeof value !== 'object') return value;
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
+    // An element's attributes: { href: …, "aria-label": … }, in a snapshot of the page and
+    // in each later change to it ({ id, attributes: { … } }).
+    if (key === 'attributes' && item && typeof item === 'object' && !Array.isArray(item)) {
+      const kept: Record<string, unknown> = {};
+      for (const [name, held] of Object.entries(item)) {
+        if (TYPED_ATTRIBUTE.test(name)) continue;
+        kept[name] = typeof held === 'string' && /^(href|action|formaction)$/.test(name) ? cleanUrl(held) : scrubReplayNode(held, depth + 1);
+      }
+      out[key] = kept;
+      continue;
+    }
     out[key] =
       typeof item === 'string' && /^(href|action|formaction|url|pageUrl)$/.test(key)
         ? cleanUrl(item)
@@ -85,8 +111,10 @@ function scrubReplayNode(value: unknown, depth: number): unknown {
 
 /**
  * Session Replay uploads `{ events: ["<one recorded event as JSON>", …] }`. Each event can
- * hold the page's address (when recording starts and whenever the address changes) and
- * the href of every link on the page. This cleans those and leaves the rest as it was.
+ * hold the page's address (when recording starts and whenever the address changes), the
+ * href of every link on the page, and every element's attributes. This cleans the
+ * addresses, takes out the attributes that can hold typed words (labels, titles, data-*)
+ * and leaves the rest as it was.
  * An event that can't be read is left out rather than sent unchecked; a body that can't be
  * read at all returns null, and the caller sends nothing.
  */
