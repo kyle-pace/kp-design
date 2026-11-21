@@ -88,6 +88,18 @@ Per-page accents: set `data-accent="sky"` (or tangerine, pink, violet, lime, sun
 
 Display settings are saved per domain, so a choice made on kylepace.net doesn't carry over to kylepace.dev.
 
+## Counting real people in Amplitude
+
+Analytics skips machines it can recognize (`lib/automation.ts`), but data from before 0.11.2 (November 21, 2026) still holds agent browsers and crawlers, and Kyle's own browsers only count as internal once tagged with `?internal=on`. To count people, add a segment with all of these conditions (they are ANDed):
+
+- `gp:internal_user` (user) is not `True`
+- `device_type` (user) is not `Linux`
+- `os` (user) does not contain `Headless`, `spider`, `Iceweasel`, `Opera Mini`, `NetFront`, `Firefox Alpha`
+- `os` (user) is not `Chrome 117`, `Chrome 79`, `Chrome 104`, `Chrome 116`, `Chrome 27`, `Chrome 36`, `Chrome 45`, `Chrome Mobile 53`, `Chrome Mobile WebView 30`, `Edge 12`, `Firefox 109`, `Firefox 3`, `Firefox 52`, `Safari 6`, `Mobile Safari 5`, `Mobile Safari 14`, `Opera Mobile 12`, `Amazon Silk 1`
+- Grocery Deals only: also `os` is not `Chrome Mobile 151` (phone-emulation screenshot runs in its November spike)
+
+In Henwood, use `gp:build` is `release` instead; Dev and debug builds set `internal_user` from November 21, 2026.
+
 ## Releasing a change
 
 1. Change it here, and try it in a real site first (`npm i ../kp-design` in a local clone), including its build and an axe check in light and dark mode.
