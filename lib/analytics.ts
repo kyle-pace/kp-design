@@ -1,8 +1,9 @@
 // Amplitude analytics, set up the private way every one of Kyle's sites uses:
 // autocapture, no IP address, an ID kept in localStorage (no cookies), off for Global
 // Privacy Control, Do Not Track or the site's opt-out, and only on the live domain.
-// Automated browsers and crawlers send nothing, and Kyle's own browsers are tagged
-// `internal_user: true` (open any page with ?internal=on once) so charts can leave them out.
+// Automated, agent and emulated browsers and crawlers send nothing (lib/automation.ts),
+// and Kyle's own browsers are tagged `internal_user: true` (open any page with ?internal=on
+// once) so charts can leave them out.
 // Page addresses are recorded without their query string or fragment, so a search someone
 // typed ("/?q=…") never leaves the browser (lib/analytics-urls.ts).
 // Clicks are recorded without the labels, titles and data-* values of the elements around
@@ -16,6 +17,8 @@
 // the SDK never counts against a page's JavaScript budget or delays its first paint.
 // These two files are the only code that talks to Amplitude, so switching tools means
 // changing them.
+
+import { looksAutomated } from './automation';
 
 type Sdk = typeof import('./analytics-sdk');
 
@@ -33,12 +36,12 @@ const REPLAY_KEY = 'kp-replay';
 const INTERNAL_KEY = 'kp-internal';
 
 /**
- * Headless and automated browsers: Playwright, Puppeteer and Selenium set navigator.webdriver;
- * headless Chrome, Lighthouse and crawlers name themselves in the user agent.
+ * Crawlers, automated and emulated browsers (lib/automation.ts says which and why):
+ * test runners set navigator.webdriver, headless Chrome and crawlers name themselves, and
+ * agent browsers give themselves away by running desktop Linux or faking an Android phone.
  */
 export function isAutomated(): boolean {
-  if (navigator.webdriver === true) return true;
-  return /HeadlessChrome|Lighthouse|bot\/|crawl|spider|slurp|facebookexternalhit/i.test(navigator.userAgent || '');
+  return looksAutomated(navigator.userAgent || '', navigator.platform || '', navigator.webdriver === true);
 }
 
 /**
