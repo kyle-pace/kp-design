@@ -1,6 +1,6 @@
 {
   "name": "kp-design",
-  "version": "0.11.2",
+  "version": "0.12.0",
   "description": "Kyle Pace's design system for his websites: tokens, Atkinson Hyperlegible type, display settings, header and footer.",
   "type": "module",
   "scripts": {

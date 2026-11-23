@@ -51,9 +51,15 @@ interface Props {
    * One to three sentences shown in a welcome dialog on a visitor's first visit: what the
    * experiment is and what to try. Titled with `lab.name` (or the page title) unless you
    * pass `{ name, text }`, for labs whose `lab.name` reads as "Back to the search".
-   * Links to `about`.
+   * Links to `about`. `text` can be a list of paragraphs.
    */
-  welcome?: string | { name: string; text: string };
+  welcome?: string | { name: string; text: string | string[] };
+  /**
+   * Where feedback goes (a mailto: or a page). Adds "Send feedback" to the welcome dialog and
+   * to the start of the footer's links. Clicks send "Opened Feedback Link" with
+   * `opened_from`: welcome or footer. A project with `site` can set it there once instead.
+   */
+  feedback?: string;
   noindex?: boolean;
   /**
    * For a project that has grown out of kylepace.dev onto its own domain (Findish at
@@ -66,6 +72,8 @@ interface Props {
     analytics: { apiKey: string; liveHosts: string[]; replayRate?: number };
     footer: { href: string; label: string }[];
     accessibilityHref: string;
+    /** Where feedback goes, for every page (see `feedback`). */
+    feedback?: string;
   };
   /** Short form of the back label on phones. */
   backShort?: string;
@@ -90,6 +98,7 @@ const {
   about,
   lab,
   welcome,
+  feedback,
   noindex = false,
   site: own,
   backShort = 'More labs',
@@ -104,6 +113,7 @@ const footer = own?.footer ?? [
   { href: 'https://kylepace.dev/connections/', label: 'Connections' },
 ];
 const accessibilityHref = own?.accessibilityHref ?? 'https://kylepace.dev/accessibility/';
+const feedbackHref = feedback ?? own?.feedback;
 
 const trim = (p: string) => p.replace(/\/+$/, '');
 const here = trim(Astro.url.pathname);
@@ -180,6 +190,7 @@ const pageTitle =
       <p>Made by <a href="https://kylepace.net/">Kyle Pace</a>.</p>
       <nav aria-label="Elsewhere">
         <ul>
+          {feedbackHref && <li><a href={feedbackHref} data-kp-feedback="footer">Send feedback</a></li>}
           {footer.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
         </ul>
       </nav>
@@ -191,12 +202,13 @@ const pageTitle =
           name={typeof welcome === 'string' ? (lab?.name ?? title) : welcome.name}
           text={typeof welcome === 'string' ? welcome : welcome.text}
           about={about}
+          feedback={feedbackHref}
         />
       )
     }
     <script is:inline type="application/json" id="kp-analytics" set:html={JSON.stringify(analytics)} />
     <script>
-      import { startAnalytics } from '../lib/analytics';
+      import { startAnalytics, track } from '../lib/analytics';
       import { DEV_ANALYTICS } from '../lib/kylepace-dev';
       // The page's own project (set by `site`), or kylepace.dev's.
       let options = DEV_ANALYTICS;
@@ -204,6 +216,11 @@ const pageTitle =
         options = JSON.parse(document.getElementById('kp-analytics')?.textContent || '') ?? DEV_ANALYTICS;
       } catch {}
       startAnalytics(options);
+
+      // "Send feedback" in the footer (the welcome dialog counts its own).
+      for (const link of document.querySelectorAll<HTMLAnchorElement>('.lab-foot a[data-kp-feedback]')) {
+        link.addEventListener('click', () => track('Opened Feedback Link', { opened_from: 'footer' }));
+      }
 
       // "Back to <lab>" goes back in history when the page before was the lab itself, so
       // a search, a map view or a scroll position comes back as it was. Otherwise (a
