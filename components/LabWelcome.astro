@@ -9,34 +9,41 @@
 interface Props {
   /** The lab's name, as listed ("World transit"). */
   name: string;
-  /** One to three plain sentences: what it is and what to try first. */
-  text: string;
+  /** One to three plain sentences: what it is and what to try first. Pass a list for more than one paragraph. */
+  text: string | string[];
   /** The lab's About page, for an "About this project" link (the same words as the bar). */
   about?: string;
   /** What to remember the visit by; defaults to the lab's name. */
   storageKey?: string;
+  /**
+   * Where feedback goes (a mailto: or a page). Adds a "Send feedback" link beside "Start
+   * exploring"; a click sends "Opened Feedback Link" with `opened_from: welcome`.
+   */
+  feedback?: string;
 }
 
-const { name, text, about, storageKey = name } = Astro.props;
+const { name, text, about, storageKey = name, feedback } = Astro.props;
+const paragraphs = Array.isArray(text) ? text : [text];
 ---
 
 <dialog class="lab-welcome" aria-labelledby="lab-welcome-title" data-lab-welcome={`kp-welcome:${storageKey}`}>
   <form method="dialog">
     <h2 id="lab-welcome-title">Welcome to {name}</h2>
-    <p class="lab-welcome-text">{text}</p>
+    {paragraphs.map((p) => <p class="lab-welcome-text">{p}</p>)}
     <p class="lab-welcome-by">
       Made by <a href="https://kylepace.net/about/">Kyle Pace</a>, a product manager who designs and builds small, free
       things after hours.
     </p>
     <div class="lab-welcome-actions">
       <button type="submit" value="explore" autofocus>Start exploring</button>
+      {feedback && <a href={feedback} data-kp-feedback="welcome">Send feedback</a>}
       {about && <a href={about}>About this project</a>}
     </div>
   </form>
 </dialog>
 
 <script>
-  import { isAutomated } from '../lib/analytics';
+  import { isAutomated, track } from '../lib/analytics';
 
   for (const dialog of document.querySelectorAll<HTMLDialogElement>('[data-lab-welcome]')) {
     const key = dialog.dataset.labWelcome!;
@@ -66,6 +73,13 @@ const { name, text, about, storageKey = name } = Astro.props;
       if (!target.hasAttribute('tabindex') && !target.matches('a, button, input, select, textarea')) target.setAttribute('tabindex', '-1');
       requestAnimationFrame(() => target.focus({ preventScroll: true }));
     });
+    // "Send feedback": counted, then the dialog closes so the page is ready when they're back.
+    for (const link of dialog.querySelectorAll<HTMLAnchorElement>('[data-kp-feedback]')) {
+      link.addEventListener('click', () => {
+        track('Opened Feedback Link', { opened_from: 'welcome' });
+        dialog.close();
+      });
+    }
     // A click on the dimmed page around the dialog closes it too.
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
