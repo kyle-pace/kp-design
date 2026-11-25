@@ -53,7 +53,17 @@ interface Props {
    * pass `{ name, text }`, for labs whose `lab.name` reads as "Back to the search".
    * Links to `about`. `text` can be a list of paragraphs.
    */
-  welcome?: string | { name: string; text: string | string[] };
+  welcome?:
+    | string
+    | {
+        name: string;
+        text: string | string[];
+        /** "on-request": never opens by itself; a `data-kp-welcome-open` button opens it. */
+        opens?: 'first-visit' | 'on-request';
+        heading?: string;
+        closeLabel?: string;
+        aboutLabel?: string;
+      };
   /**
    * Where feedback goes (a mailto: or a page). Adds "Send feedback" to the welcome dialog and
    * to the start of the footer's links. Clicks send "Opened Feedback Link" with
@@ -203,6 +213,7 @@ const pageTitle =
           text={typeof welcome === 'string' ? welcome : welcome.text}
           about={about}
           feedback={feedbackHref}
+          {...(typeof welcome === 'string' ? {} : { opens: welcome.opens, heading: welcome.heading, closeLabel: welcome.closeLabel, aboutLabel: welcome.aboutLabel })}
         />
       )
     }

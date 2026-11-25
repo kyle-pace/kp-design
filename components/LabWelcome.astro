@@ -4,6 +4,11 @@
 // bots. LabLayout shows it when given `welcome`; pages with their own layout (World
 // cuisine) can place it themselves.
 //
+// With `opens="on-request"` it never opens by itself: a lab that would rather let the page
+// speak first puts a button with `data-kp-welcome-open="<where>"` somewhere obvious ("About
+// this site"), and a click opens the same dialog, counted as "Opened About Dialog" with
+// `opened_from: <where>`. Focus goes back to that button when it closes.
+//
 // It's a native <dialog> opened with showModal(): focus moves into it and back after,
 // Escape closes it, the page behind can't be reached, and screen readers announce it.
 interface Props {
@@ -20,24 +25,41 @@ interface Props {
    * exploring"; a click sends "Opened Feedback Link" with `opened_from: welcome`.
    */
   feedback?: string;
+  /**
+   * "first-visit" (the default): opens by itself once per browser. "on-request": only a
+   * button with `data-kp-welcome-open` opens it.
+   */
+  opens?: 'first-visit' | 'on-request';
+  /** The dialog's heading; defaults to "Welcome to <name>" (on request, "About <name>"). */
+  heading?: string;
+  /** The close button's words; defaults to "Start exploring" (on request, "Close"). */
+  closeLabel?: string;
+  /** The words of the link to `about`; defaults to "About this project". */
+  aboutLabel?: string;
 }
 
-const { name, text, about, storageKey = name, feedback } = Astro.props;
+const { name, text, about, storageKey = name, feedback, opens = 'first-visit', heading, closeLabel, aboutLabel = 'About this project' } = Astro.props;
+const onRequest = opens === 'on-request';
 const paragraphs = Array.isArray(text) ? text : [text];
 ---
 
-<dialog class="lab-welcome" aria-labelledby="lab-welcome-title" data-lab-welcome={`kp-welcome:${storageKey}`}>
+<dialog
+  class="lab-welcome"
+  aria-labelledby="lab-welcome-title"
+  data-lab-welcome={`kp-welcome:${storageKey}`}
+  data-opens={onRequest ? 'on-request' : 'first-visit'}
+>
   <form method="dialog">
-    <h2 id="lab-welcome-title">Welcome to {name}</h2>
+    <h2 id="lab-welcome-title">{heading ?? (onRequest ? `About ${name}` : `Welcome to ${name}`)}</h2>
     {paragraphs.map((p) => <p class="lab-welcome-text">{p}</p>)}
     <p class="lab-welcome-by">
       Made by <a href="https://kylepace.net/about/">Kyle Pace</a>, a product manager who designs and builds small, free
       things after hours.
     </p>
     <div class="lab-welcome-actions">
-      <button type="submit" value="explore" autofocus>Start exploring</button>
+      <button type="submit" value="explore" autofocus>{closeLabel ?? (onRequest ? 'Close' : 'Start exploring')}</button>
       {feedback && <a href={feedback} data-kp-feedback="welcome">Send feedback</a>}
-      {about && <a href={about}>About this project</a>}
+      {about && <a href={about}>{aboutLabel}</a>}
     </div>
   </form>
 </dialog>
@@ -46,6 +68,32 @@ const paragraphs = Array.isArray(text) ? text : [text];
   import { isAutomated, track } from '../lib/analytics';
 
   for (const dialog of document.querySelectorAll<HTMLDialogElement>('[data-lab-welcome]')) {
+    // "Send feedback": counted, then the dialog closes so the page is ready when they're back.
+    for (const link of dialog.querySelectorAll<HTMLAnchorElement>('[data-kp-feedback]')) {
+      link.addEventListener('click', () => {
+        track('Opened Feedback Link', { opened_from: 'welcome' });
+        dialog.close();
+      });
+    }
+    // A click on the dimmed page around the dialog closes it too.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    // On request: only the page's own button opens it, and the browser puts focus back on
+    // that button when it closes.
+    if (dialog.dataset.opens === 'on-request') {
+      for (const button of document.querySelectorAll<HTMLElement>('[data-kp-welcome-open]')) {
+        button.addEventListener('click', (event) => {
+          if (typeof dialog.showModal !== 'function') return; // a plain link still works
+          event.preventDefault();
+          dialog.showModal();
+          track('Opened About Dialog', { opened_from: button.dataset.kpWelcomeOpen || 'button' });
+        });
+      }
+      continue;
+    }
+
     const key = dialog.dataset.labWelcome!;
     let seen = false;
     try {
@@ -72,17 +120,6 @@ const paragraphs = Array.isArray(text) ? text : [text];
       if (!target) return;
       if (!target.hasAttribute('tabindex') && !target.matches('a, button, input, select, textarea')) target.setAttribute('tabindex', '-1');
       requestAnimationFrame(() => target.focus({ preventScroll: true }));
-    });
-    // "Send feedback": counted, then the dialog closes so the page is ready when they're back.
-    for (const link of dialog.querySelectorAll<HTMLAnchorElement>('[data-kp-feedback]')) {
-      link.addEventListener('click', () => {
-        track('Opened Feedback Link', { opened_from: 'welcome' });
-        dialog.close();
-      });
-    }
-    // A click on the dimmed page around the dialog closes it too.
-    dialog.addEventListener('click', (e) => {
-      if (e.target === dialog) dialog.close();
     });
   }
 </script>
