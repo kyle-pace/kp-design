@@ -84,6 +84,8 @@ const paragraphs = Array.isArray(text) ? text : [text];
     // that button when it closes.
     if (dialog.dataset.opens === 'on-request') {
       for (const button of document.querySelectorAll<HTMLElement>('[data-kp-welcome-open]')) {
+        // It may be a link to the About page (so it works before scripts load); say it opens a dialog.
+        button.setAttribute('aria-haspopup', 'dialog');
         button.addEventListener('click', (event) => {
           if (typeof dialog.showModal !== 'function') return; // a plain link still works
           event.preventDefault();
